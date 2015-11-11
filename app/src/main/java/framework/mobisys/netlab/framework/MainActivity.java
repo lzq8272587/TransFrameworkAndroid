@@ -78,7 +78,6 @@ public class MainActivity extends AppCompatActivity
                         System.out.println(error.getLocalizedMessage());
                     }
                 });
-
         // Access the RequestQueue through your singleton class.
         RequestQueue queue = Volley.newRequestQueue(this);
         System.out.println("Add request to queue");
