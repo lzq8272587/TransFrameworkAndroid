@@ -10,10 +10,17 @@ public class TransFramework {
     }
 
     public void addUploadRequest(UploadRequest ur) {
+        /**
+         **
+         */
 
     }
 
     public void addDownloadRequest(DownloadRequest dr) {
+        /**
+         * 根据具体Request的内容，下载相应的内容
+         */
+
 
     }
 
