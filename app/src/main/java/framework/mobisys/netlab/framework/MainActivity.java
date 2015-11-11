@@ -2,9 +2,8 @@ package framework.mobisys.netlab.framework;
 
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.view.View;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -12,6 +11,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
+
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONObject;
 
 import framework.mobisys.netlab.transframeworkandroid.R;
 
@@ -25,6 +35,9 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        /**
+         * 下面的这段代码是用来执行悬浮的mail按钮被按下的时候进行的操作，其实就是下面有一个Snackbar，这个bar会弹出然后显示一行字。
+         */
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -42,6 +55,36 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        /**
+         * 在主界面的TextView上显示下载到的内容
+         */
+        /**
+         * Test: 利用Volley读取数据，然后显示在主界面的TextView上
+         */
+        final TextView textView = (TextView) findViewById(R.id.MainTextView);
+        String url = "http://52.88.216.252/json_test.txt";
+        JsonObjectRequest jsObjRequest = new JsonObjectRequest
+                (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        textView.setText("Response: " + response.toString());
+                        System.out.println("Load successfully!");
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // TODO Auto-generated method stub
+                        System.out.println(error.getLocalizedMessage());
+                    }
+                });
+
+        // Access the RequestQueue through your singleton class.
+        RequestQueue queue = Volley.newRequestQueue(this);
+        System.out.println("Add request to queue");
+        queue.add(jsObjRequest);
+
+
     }
 
     @Override
