@@ -12,16 +12,6 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
-
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
-
-import org.json.JSONObject;
 
 import framework.mobisys.netlab.transframeworkandroid.R;
 
@@ -61,7 +51,7 @@ public class MainActivity extends AppCompatActivity
          */
         /**
          * Test: 利用Volley读取数据，然后显示在主界面的TextView上
-         */
+
         final TextView textView = (TextView) findViewById(R.id.MainTextView);
         String url = "http://52.88.216.252/json_test.txt";
         JsonObjectRequest jsObjRequest = new JsonObjectRequest
@@ -82,6 +72,8 @@ public class MainActivity extends AppCompatActivity
         RequestQueue queue = Volley.newRequestQueue(this);
         System.out.println("Add request to queue");
         queue.add(jsObjRequest);
+         */
+
 
 
     }

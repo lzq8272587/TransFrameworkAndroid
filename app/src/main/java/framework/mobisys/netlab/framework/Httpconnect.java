@@ -1,13 +1,11 @@
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.io.IOException;
+package framework.mobisys.netlab.framework;
+
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 
-public class httpconnect {
+public class Httpconnect {
 
 	public static void main(String[] args) {
 		String linkString = args[0];
