@@ -177,6 +177,16 @@ public class HurlStack implements HttpStack {
         }
     }
 
+    /**
+     * 各部门注意了！！！！这里才是真正的处理Connection的地方！
+     *
+     * @param request           the request to perform
+     * @param additionalHeaders additional headers to be sent together with
+     *                          {@link Request#getHeaders()}
+     * @return
+     * @throws IOException
+     * @throws AuthFailureError
+     */
     @Override
     public HttpResponse performRequest(Request<?> request, Map<String, String> additionalHeaders)
             throws IOException, AuthFailureError {
