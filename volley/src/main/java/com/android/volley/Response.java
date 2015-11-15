@@ -95,4 +95,11 @@ public class Response<T> {
          */
         void onErrorResponse(VolleyError error);
     }
+
+    /**
+     * 增加一个反馈下载进度的Listener
+     */
+    public interface ProgressListener {
+        void onProgress(int percentage);
+    }
 }
