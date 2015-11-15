@@ -12,6 +12,17 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONObject;
 
 import framework.mobisys.netlab.transframeworkandroid.R;
 
@@ -51,7 +62,7 @@ public class MainActivity extends AppCompatActivity
          */
         /**
          * Test: 利用Volley读取数据，然后显示在主界面的TextView上
-
+         */
         final TextView textView = (TextView) findViewById(R.id.MainTextView);
         String url = "http://52.88.216.252/json_test.txt";
         JsonObjectRequest jsObjRequest = new JsonObjectRequest
@@ -72,9 +83,43 @@ public class MainActivity extends AppCompatActivity
         RequestQueue queue = Volley.newRequestQueue(this);
         System.out.println("Add request to queue");
         queue.add(jsObjRequest);
+
+
+        /**
+         * 使用ImageRequest获取数据并显示
          */
+        final ImageView imageView = (ImageView) findViewById(R.id.MainImageView);
+        url = "http://52.88.216.252/boat.jpg";
 
+//        ImageRequest imgrequest = new ImageRequest(url,
+//                new Response.Listener<Bitmap>() {
+//                    @Override
+//                    public void onResponse(Bitmap bitmap) {
+//                        imageView.setImageBitmap(bitmap);
+//                    }
+//                }, 0, 0, null,
+//                new Response.ErrorListener() {
+//                    public void onErrorResponse(VolleyError error) {
+//                        System.out.println(error.getLocalizedMessage());
+//                    }
+//                });
 
+        /**
+         * 测试我们自己写的ObjectRequest
+         */
+        LObjectRequest orequest = new LObjectRequest(url, new Response.Listener<byte[]>() {
+            /**
+             * Called when a response is received.
+             *
+             * @param response
+             */
+            @Override
+            public void onResponse(byte[] response) {
+                imageView.setImageBitmap(Tools.getBitmap(response));
+            }
+        });
+        System.out.println("Add image request to queue");
+        queue.add(orequest);
 
     }
 
