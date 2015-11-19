@@ -85,11 +85,19 @@ public class MainActivity extends AppCompatActivity
         queue.add(jsObjRequest);
 
 
+
+
         /**
          * 使用ImageRequest获取数据并显示
          */
         final ImageView imageView = (ImageView) findViewById(R.id.MainImageView);
         url = "http://52.88.216.252/boat.jpg";
+//        try {
+//            HttpURLConnection conn=(HttpURLConnection)(new URL(url).openConnection());
+//            conn.getInputStream();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
 //        ImageRequest imgrequest = new ImageRequest(url,
 //                new Response.Listener<Bitmap>() {
@@ -118,6 +126,7 @@ public class MainActivity extends AppCompatActivity
                 imageView.setImageBitmap(Tools.getBitmap(response));
             }
         });
+        orequest.setShouldCache(false);
         System.out.println("Add image request to queue");
         queue.add(orequest);
 
