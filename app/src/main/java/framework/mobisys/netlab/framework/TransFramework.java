@@ -52,7 +52,36 @@ public class TransFramework {
         RequestQueue queue = Volley.newRequestQueue(ctx);
         System.out.println("Add request to queue");
         queue.add(jsObjRequest);
+    }
 
+
+    public LStringRequest createStringRequest(String url, int delay, String tag) {
+        return null;
+    }
+
+    public LObjectRequest createObjectRequest(String url, int delay, String tag) {
+        return null;
+    }
+
+    public String perfromStringRequest(LStringRequest lsr) {
+        return null;
+    }
+
+    public byte[] performObjectRequest(LObjectRequest lor) {
+        return null;
+    }
+
+    public void putStringRequest(LStringRequest lsr, Response.Listener rl) {
 
     }
+
+    public void putObjectRequest(LObjectRequest lor, Response.Listener rl, Response.ProgressListener pl) {
+
+    }
+
+    public void deleteRequest(String tag) {
+
+    }
+
+
 }
