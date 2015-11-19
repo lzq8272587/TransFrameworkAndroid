@@ -16,6 +16,8 @@
 
 package com.android.volley.toolbox;
 
+import android.util.Log;
+
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Request.Method;
@@ -201,32 +203,58 @@ public class HurlStack implements HttpStack {
             }
             url = rewritten;
         }
+        Log.e("HurlStack,request", request.toString());
+        Log.e("HurlStack,addheader", additionalHeaders.toString());
+
         URL parsedUrl = new URL(url);
         HttpURLConnection connection = openConnection(parsedUrl, request);
+        // System.out.println("In HurlStack.performRequest() "+connection.getClass().getName());
+
+        //根据Request中的头部信息，以及额外的头部信息，设置HttpURLConnection中的头部
         for (String headerName : map.keySet()) {
             connection.addRequestProperty(headerName, map.get(headerName));
         }
+        //根据Request的方式，设置HTTP的请求类型是GET,PUT,POST还是其它
+        //里面会调用Request的request.getMethod()以及Connection的connection.setRequestMethod("GET")方法
         setConnectionParametersForRequest(connection, request);
-        // Initialize HttpResponse with data from the HttpURLConnection.
+
+        //设置HTTP的版本
         ProtocolVersion protocolVersion = new ProtocolVersion("HTTP", 1, 1);
+
+        //从Connection中读取状态码
         int responseCode = connection.getResponseCode();
+
         if (responseCode == -1) {
             // -1 is returned by getResponseCode() if the response code could not be retrieved.
             // Signal to the caller that something was wrong with the connection.
             throw new IOException("Could not retrieve response code from HttpUrlConnection.");
         }
+
         StatusLine responseStatus = new BasicStatusLine(protocolVersion,
                 connection.getResponseCode(), connection.getResponseMessage());
+
         BasicHttpResponse response = new BasicHttpResponse(responseStatus);
+
+        //下面的这个hasResponseBody就是根据Request的请求类型，以及Response返回的状态码，判断这到底是不是一个有body的Response
+        //如果有，调用setEntity函数。注意这里getStatusCode返回的就是状态码
         if (hasResponseBody(request.getMethod(), responseStatus.getStatusCode())) {
+            //这里的entityFromConnection函数，本质上干的事情就是从connection里面抽取出InputStream
+            //然后创建了一个BasicHttpEntity，把InputStream，ContentLength，等等一系列的HTTP头部参数传进去了
+            //最后把这个Entity放进BasicHttpResponse这个方法里面。执行到这一步的时候，下载内容应该装在HTTP的缓存中
+            //这里的Entity最终会被转变成byte[]，放进response里面去。
             response.setEntity(entityFromConnection(connection));
         }
+
+
+        //这里干的事情就是从Response里面读取出各种头部信息，然后添加到BasicHttpResponse里面去
         for (Entry<String, List<String>> header : connection.getHeaderFields().entrySet()) {
             if (header.getKey() != null) {
+                System.out.println("In HurlStack, " + header.getKey() + "-->" + header.getValue().get(0));
                 Header h = new BasicHeader(header.getKey(), header.getValue().get(0));
                 response.addHeader(h);
             }
         }
+        //Log.e("HurlStack,request", response.t.toString());
         return response;
     }
 
@@ -234,7 +262,10 @@ public class HurlStack implements HttpStack {
      * Create an {@link HttpURLConnection} for the specified {@code url}.
      */
     protected HttpURLConnection createConnection(URL url) throws IOException {
-        return (HttpURLConnection) url.openConnection();
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        // System.out.println("try: "+conn.getClass().getName());
+        return conn;
+        //return (HttpURLConnection) url.openConnection();
     }
 
     /**
