@@ -26,7 +26,6 @@ public class TransFramework {
         /**
          **这个版本中，利用volley帮助我们上传所需要的内容
          */
-
     }
 
     public void addDownloadRequest(final StringDownloadRequest dr) {
