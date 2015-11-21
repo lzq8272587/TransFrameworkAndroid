@@ -16,6 +16,10 @@
 
 package com.android.volley.toolbox;
 
+import android.app.Application;
+import android.content.Context;
+import android.provider.ContactsContract;
+
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Request.Method;
@@ -31,7 +35,12 @@ import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicHttpResponse;
 import org.apache.http.message.BasicStatusLine;
 
+import java.io.BufferedInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
@@ -44,6 +53,10 @@ import java.util.Map.Entry;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
+import android.app.Activity;
+import android.os.Bundle;
+import android.os.Environment;
+import android.view.Menu;
 
 /**
  * An {@link HttpStack} based on {@link HttpURLConnection}.
@@ -95,14 +108,18 @@ public class HurlStack implements HttpStack {
      * @param connection
      * @return an HttpEntity populated with data from <code>connection</code>.
      */
-    private static HttpEntity entityFromConnection(HttpURLConnection connection) {
+    private HttpEntity entityFromConnection(HttpURLConnection connection, URL parsedUrl, Request request) {
         BasicHttpEntity entity = new BasicHttpEntity();
         InputStream inputStream;
         try {
-            inputStream = connection.getInputStream();
+            inputStream = new BufferedInputStream(connection.getInputStream());
+            //----------------------------modified part starts here----------------------------//
+            //----------------------------modified part ends here----------------------------//
+
         } catch (IOException ioe) {
             inputStream = connection.getErrorStream();
         }
+
         entity.setContent(inputStream);
         entity.setContentLength(connection.getContentLength());
         entity.setContentEncoding(connection.getContentEncoding());
@@ -194,95 +211,96 @@ public class HurlStack implements HttpStack {
         }
         URL parsedUrl = new URL(url);
         HttpURLConnection connection = openConnection(parsedUrl, request);
-        //---------------------------------modified by JYM---------------------------------//
-        //增加分块传输和错误恢复模块
-        String linkString = "http://107.161.26.199/temp";
-        int blockSize = 512;
-        String sPath = "e://temp";
-        int nStartPos = 0;
-        int timeout = 15000;
-        int NUMLIMIT_FAIL=5;
-        long nEndPos = 30000000;
-        byte[] b = new byte[blockSize];
-
-        try {
-            connection.setConnectTimeout(timeout);
-            connection.setReadTimeout(timeout);
-            String sProperty = "bytes="  + nStartPos +  "-" +nEndPos;   //sProperty设置的是开始下载的位置，即断点。若nStartPos为0则完整下载整个文件
-            connection.setRequestProperty("RANGE" , sProperty);
-            //当然也可以这么写：httpConnection.setRequestProperty("RANGE","bytes=50-20070");
-            InputStream input = connection.getInputStream();
-            RandomAccessFile oSavedFile = new RandomAccessFile(sPath, "rw");
-            //读取网络文件,写入指定的文件中
-            int nRead,failedCnt=1;
-            System.out.println("Connect successfully\nBegin downloading...");
-            while (nStartPos < nEndPos&&failedCnt<=NUMLIMIT_FAIL) {
-                try {
-                    nRead = input.read(b, 0, blockSize);
-                    if(nRead>0){
-                        oSavedFile.write(b, 0, nRead);
-                        nStartPos += nRead;
-                    }
-                    else {
-                        break;
-                    }
-                    System.out.println(nStartPos*100/nEndPos+"%");
-                } catch (Exception e) {
-                    System.out.println("Network error, try to reconnect ("+failedCnt+")");
-                    failedCnt++;
-
-                    connection.disconnect();
-                    connection = (HttpURLConnection) parsedUrl.openConnection();
-                    connection.setConnectTimeout(timeout);
-                    connection.setReadTimeout(timeout);
-                    sProperty = "bytes="  + nStartPos +  "-" +nEndPos;   //sProperty设置的是开始下载的位置，即断点。若nStartPos为0则完整下载整个文件
-                    connection.setRequestProperty("RANGE" , sProperty);
-                    //当然也可以这么写：httpConnection.setRequestProperty("RANGE","bytes=50-20070");
-                    input = connection.getInputStream();
-                }
-            }
-            if(failedCnt>NUMLIMIT_FAIL){
-                System.out.println("Download failed.");
-            }
-            else {
-                System.out.println("Download successfully!");
-            }
-            connection.disconnect();
-            oSavedFile.close();
-        } catch (Exception e1) {
-            e1.printStackTrace();
-            //System.out.println("Connection failed.");
-        }
-        System.out.println("Ends.");
-        //---------------------------------modified by JYM(ends)---------------------------------//
-
-
         for (String headerName : map.keySet()) {
             connection.addRequestProperty(headerName, map.get(headerName));
         }
         setConnectionParametersForRequest(connection, request);
+        InputStream inputStream;
+        //------------------------------modification starts from here------------------------------//
+        int nStartPos = 0;
+        int timeout = 15000;
+        int blockSize = 8;
+        int NUMLIMIT_FAIL = 3;
+        int nRead, failedCnt;
+        long nEndPos = 3000000;
+        byte[] b = new byte[blockSize];
+
+        String sPath = "/data/data/framework.mobisys.netlab.transframeworkandroid/download.jpg";
+        FileOutputStream f = new FileOutputStream(new File(sPath));
+        String sProperty = "bytes=" + nStartPos + "-" + nEndPos;   //sProperty设置的是开始下载的位置，即断点。若nStartPos为0则完整下载整个文件
+//        connection.setRequestProperty("RANGE" , sProperty);
+        inputStream = new BufferedInputStream(connection.getInputStream());
+        System.out.println("Begin downloading...");
+        while (true) {
+            failedCnt = 1;
+            while (nStartPos < nEndPos && failedCnt <= NUMLIMIT_FAIL) {
+                try {
+                    nRead = inputStream.read(b, 0, blockSize);
+                    if (nRead > 0) {
+                        f.write(b, 0, nRead);
+                        nStartPos += nRead;
+                    } else {
+                        inputStream = connection.getErrorStream();
+                        break;
+                    }
+//                    System.out.println(nStartPos*100/nEndPos+"%");
+                } catch (Exception e) {
+                    System.out.println("Network error, try to reconnect (" + failedCnt + ")");
+                    failedCnt++;
+
+                    connection.disconnect();
+                    connection = openConnection(parsedUrl, request);
+                    connection.setConnectTimeout(timeout);
+                    connection.setReadTimeout(timeout);
+                    sProperty = "bytes=" + nStartPos + "-" + nEndPos;   //sProperty设置的是开始下载的位置，即断点。若nStartPos为0则完整下载整个文件
+                    connection.setRequestProperty("RANGE", sProperty);
+                    //当然也可以这么写：httpConnection.setRequestProperty("RANGE","bytes=50-20070");
+                    inputStream = connection.getInputStream();
+                }
+            }
+            if (failedCnt > NUMLIMIT_FAIL) {
+
+            } else {
+                System.out.println("Download successfully!");
+                f.close();
+                break;
+            }
+        }
+        //------------------------------modification ends here------------------------------//
+
         // Initialize HttpResponse with data from the HttpURLConnection.
         ProtocolVersion protocolVersion = new ProtocolVersion("HTTP", 1, 1);
-        int responseCode = connection.getResponseCode();
+        int responseCode=200;
+        responseCode = connection.getResponseCode();
         if (responseCode == -1) {
             // -1 is returned by getResponseCode() if the response code could not be retrieved.
             // Signal to the caller that something was wrong with the connection.
             throw new IOException("Could not retrieve response code from HttpUrlConnection.");
         }
-        StatusLine responseStatus = new BasicStatusLine(protocolVersion,
-                connection.getResponseCode(), connection.getResponseMessage());
+
+        inputStream=new FileInputStream(sPath);
+        BasicHttpEntity entity = new BasicHttpEntity();
+        StatusLine responseStatus = new BasicStatusLine(protocolVersion, responseCode, "OK");
         BasicHttpResponse response = new BasicHttpResponse(responseStatus);
-        if (hasResponseBody(request.getMethod(), responseStatus.getStatusCode())) {
-            response.setEntity(entityFromConnection(connection));
-        }
+        entity.setContent(inputStream);
+        entity.setContentLength(connection.getContentLength());
+        entity.setContentEncoding(connection.getContentEncoding());
+        entity.setContentType(connection.getContentType());
+        response.setEntity(entity);
+//        if (hasResponseBody(request.getMethod(), responseStatus.getStatusCode())) {
+//            response.setEntity(entityFromConnection(connection, parsedUrl, request));
+//        }
+
         for (Entry<String, List<String>> header : connection.getHeaderFields().entrySet()) {
             if (header.getKey() != null) {
                 Header h = new BasicHeader(header.getKey(), header.getValue().get(0));
                 response.addHeader(h);
             }
         }
+        connection.disconnect();
         return response;
     }
+
 
     /**
      * Create an {@link HttpURLConnection} for the specified {@code url}.
