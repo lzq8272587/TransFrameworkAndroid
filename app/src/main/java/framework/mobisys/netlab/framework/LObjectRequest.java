@@ -15,8 +15,12 @@ import com.android.volley.toolbox.HttpHeaderParser;
 public class LObjectRequest extends Request<byte[]> {
 
     final String TAG = "LObjectRequest";
+
     String url = null;
+
+
     Response.Listener<byte[]> sListener = null;
+
     Response.ProgressListener pListener = null;
 
 
@@ -39,6 +43,19 @@ public class LObjectRequest extends Request<byte[]> {
         sListener = listener;
     }
 
+
+    public LObjectRequest(String url, int delay, String tag) {
+        super(Request.Method.GET, url, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("LStringRequest", error.getMessage());
+            }
+        });
+        this.delay = delay;
+        this.url = url;
+        this.tag = tag;
+    }
+
     /**
      * Subclasses must implement this to parse the raw network response
      * and return an appropriate response type. This method will be
@@ -55,6 +72,7 @@ public class LObjectRequest extends Request<byte[]> {
         return Response.success(response.data, HttpHeaderParser.parseCacheHeaders(response));
     }
 
+
     /**
      * Subclasses must implement this to perform delivery of the parsed
      * response to their listeners.  The given response is guaranteed to
@@ -67,4 +85,22 @@ public class LObjectRequest extends Request<byte[]> {
     protected void deliverResponse(byte[] response) {
         sListener.onResponse(response);
     }
+
+
+    public Response.ProgressListener getProgressListener() {
+        return pListener;
+    }
+
+    public void setProgressListener(Response.ProgressListener pListener) {
+        this.pListener = pListener;
+    }
+
+    public Response.Listener<byte[]> getListener() {
+        return sListener;
+    }
+
+    public void setListener(Response.Listener<byte[]> sListener) {
+        this.sListener = sListener;
+    }
+
 }

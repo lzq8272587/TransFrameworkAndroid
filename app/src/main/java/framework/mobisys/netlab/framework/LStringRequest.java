@@ -18,9 +18,15 @@ import java.io.UnsupportedEncodingException;
 public class LStringRequest extends Request<String> {
 
     final String TAG = "LStringRequest";
+
     String url = null;
+
+
     Listener<String> sListener = null;
+
+
     Response.ProgressListener pListener = null;
+
 
     /**
      * 重载之后的构造函数，使用者只需申明需要获取的URL地址，以及获取成功之后的事情即可
@@ -37,7 +43,6 @@ public class LStringRequest extends Request<String> {
         });
         sListener = ml;
         this.url = url;
-
     }
 
     /**
@@ -50,6 +55,21 @@ public class LStringRequest extends Request<String> {
     public LStringRequest(String url, Listener<String> ml, Response.ProgressListener pl) {
         this(url, ml);
         pListener = pl;
+    }
+
+    /**
+     * 重新按照新的API接口定义构造函数
+     */
+    public LStringRequest(String url, int delay, String tag) {
+        super(Request.Method.GET, url, new ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("LStringRequest", error.getMessage());
+            }
+        });
+        this.delay = delay;
+        this.url = url;
+        this.tag = tag;
     }
 
     /**
@@ -83,5 +103,21 @@ public class LStringRequest extends Request<String> {
     @Override
     protected void deliverResponse(String response) {
         sListener.onResponse(response);
+    }
+
+    public Listener<String> getListener() {
+        return sListener;
+    }
+
+    public void setListener(Listener<String> sListener) {
+        this.sListener = sListener;
+    }
+
+    public Response.ProgressListener getProgressListener() {
+        return pListener;
+    }
+
+    public void setProgressListener(Response.ProgressListener pListener) {
+        this.pListener = pListener;
     }
 }
