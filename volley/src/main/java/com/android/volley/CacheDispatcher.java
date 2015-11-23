@@ -129,6 +129,26 @@ public class CacheDispatcher extends Thread {
                         new NetworkResponse(entry.data, entry.responseHeaders));
                 request.addMarker("cache-hit-parsed");
 
+
+                /**
+                 * 这里isExpired和refreshNeeded的区别在于，一个用ttl判断，另一个用softttl判断
+                 * 原型如下：
+                 */
+                /**
+                 * True if the entry is expired.
+                 */
+//                public boolean isExpired() {
+//                    return this.ttl < System.currentTimeMillis();
+//                }
+
+                /**
+                 * True if a refresh is needed from the original data source.
+                 */
+//                public boolean refreshNeeded() {
+//                    return this.softTtl < System.currentTimeMillis();
+//                }
+
+
                 if (!entry.refreshNeeded()) {
                     // Completely unexpired cache hit. Just deliver the response.
                     mDelivery.postResponse(request, response);

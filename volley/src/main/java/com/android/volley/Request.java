@@ -47,11 +47,6 @@ public abstract class Request<T> implements Comparable<Request<T>> {
      */
     private final MarkerLog mEventLog = MarkerLog.ENABLED ? new MarkerLog() : null;
     /**
-     * Request method of this request.  Currently supports GET, POST, PUT, DELETE, HEAD, OPTIONS,
-     * TRACE, and PATCH.
-     */
-    private final int mMethod;
-    /**
      * URL of this request.
      */
     private final String mUrl;
@@ -63,6 +58,23 @@ public abstract class Request<T> implements Comparable<Request<T>> {
      * Listener interface for errors.
      */
     private final Response.ErrorListener mErrorListener;
+    /**
+     * Request method of this request.  Currently supports GET, POST, PUT, DELETE, HEAD, OPTIONS,
+     * TRACE, and PATCH.
+     */
+    public int mMethod;
+    /**
+     * 每一个Request增加一个tag
+     */
+    public String tag = null;
+    /**
+     * 这个Request所能够忍受的最大延迟
+     */
+    public int delay = 0;
+    /**
+     * 为了支持更好的可扩展性，用户可以自定义额外的HTTP头部信息
+     */
+    public Map<String, String> extraHeader = null;
     /**
      * Sequence number of this request, used to enforce FIFO ordering.
      */
@@ -83,6 +95,11 @@ public abstract class Request<T> implements Comparable<Request<T>> {
      * Whether or not a response has been delivered for this request yet.
      */
     private boolean mResponseDelivered = false;
+
+
+    /**
+     * 2015-11-23 add
+     */
     /**
      * The retry policy for this request.
      */
@@ -110,6 +127,7 @@ public abstract class Request<T> implements Comparable<Request<T>> {
     public Request(String url, Response.ErrorListener listener) {
         this(Method.DEPRECATED_GET_OR_POST, url, listener);
     }
+
 
     /**
      * Creates a new request with the given method (one of the values from {@link Method}),
@@ -142,11 +160,23 @@ public abstract class Request<T> implements Comparable<Request<T>> {
         return 0;
     }
 
+    public void setExtraHeader(Map<String, String> extraHeader) {
+        this.extraHeader = extraHeader;
+    }
+
     /**
      * Return the method for this request.  Can be one of the values in {@link Method}.
      */
     public int getMethod() {
         return mMethod;
+    }
+
+    /**
+     * 将Request中现有的Request设置成想要的Request方式
+     * @param method
+     */
+    public void setMethod(int method) {
+        this.mMethod = method;
     }
 
     /**
