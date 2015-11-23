@@ -75,6 +75,7 @@ public class E3Framework {
 
     /**
      * 利用指定的url，最大可容忍delay，以及tag创建ObjectRequest
+     *
      * @param url
      * @param delay
      * @param tag
@@ -87,6 +88,7 @@ public class E3Framework {
 
     /**
      * 以同步方式执行一个StringRequest，在返回之前会一直阻塞
+     *
      * @param lsr
      * @return
      */
@@ -98,18 +100,23 @@ public class E3Framework {
             public void onResponse(String response) {
                 result[0] = response;
                 stop[0] = true;
+                System.out.println("have fetched string, set tag to true.");
             }
         };
         lsr.setListener(listener);
         queue.add(lsr);
-        while (!stop[0]) {
-        }
+        System.out.println("get into loop.");
+        /**
+         * ???怎么把异步改成同步？
+         */
+        System.out.println("get out of loop.");
         return result[0];
     }
 
     /**
      * 以同步方式执行一个ObjectRequest，在返回之前会一直阻塞
      * 感觉这两个函数写的很丑陋
+     *
      * @param lor
      * @return
      */
