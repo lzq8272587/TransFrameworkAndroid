@@ -129,7 +129,7 @@ public class MainActivity extends AppCompatActivity
          */
 
         LObjectRequest lor = e3.createObjectRequest(url, 5, "ObjectTest");
-        lor.setShouldCache(false);
+        lor.setShouldCache(true);
         e3.putObjectRequest(lor, new Response.Listener<byte[]>() {
             @Override
             public void onResponse(byte[] response) {
