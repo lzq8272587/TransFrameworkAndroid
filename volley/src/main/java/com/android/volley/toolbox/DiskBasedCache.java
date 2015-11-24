@@ -17,6 +17,7 @@
 package com.android.volley.toolbox;
 
 import android.os.SystemClock;
+import android.util.Log;
 
 import com.android.volley.Cache;
 import com.android.volley.VolleyLog;
@@ -55,6 +56,7 @@ public class DiskBasedCache implements Cache {
      * Magic number for current version of cache file format.
      */
     private static final int CACHE_MAGIC = 0x20150306;
+    final String TAG = "DiskBasedCache";
     /**
      * Map of the Key, CacheHeader pairs
      */
@@ -319,6 +321,7 @@ public class DiskBasedCache implements Cache {
     @Override
     public synchronized void put(String key, Entry entry) {
         pruneIfNeeded(entry.data.length);
+        Log.d(TAG, "put " + key + " on disk.");
         File file = getFileForKey(key);
         try {
             BufferedOutputStream fos = new BufferedOutputStream(new FileOutputStream(file));

@@ -17,6 +17,7 @@
 package com.android.volley;
 
 import android.os.Process;
+import android.util.Log;
 
 import java.util.concurrent.BlockingQueue;
 
@@ -32,32 +33,27 @@ import java.util.concurrent.BlockingQueue;
 public class CacheDispatcher extends Thread {
 
     private static final boolean DEBUG = VolleyLog.DEBUG;
-
+    final String TAG = "CacheDispatcher";
     /**
      * The queue of requests coming in for triage.
      */
     private final BlockingQueue<Request<?>> mCacheQueue;
-
     /**
      * The queue of requests going out to the network.
      */
     private final BlockingQueue<Request<?>> mNetworkQueue;
-
     /**
      * 缓存队列
      */
     private final BlockingQueue<Request<?>> mBufferQueue;
-
     /**
      * The cache to read from.
      */
     private final Cache mCache;
-
     /**
      * For posting responses.
      */
     private final ResponseDelivery mDelivery;
-
     /**
      * Used for telling us to die.
      */
@@ -112,6 +108,7 @@ public class CacheDispatcher extends Thread {
                     continue;
                 }
 
+                //Log.d(TAG,"take new request in cacheDispatcher "+request.getClass().getName());
                 // Attempt to retrieve this item from cache.
                 Cache.Entry entry = mCache.get(request.getCacheKey());
                 if (entry == null) {
@@ -121,6 +118,7 @@ public class CacheDispatcher extends Thread {
                     /**
                      * 对于Cache未命中的request，修改代码，丢进缓存队列中
                      */
+                    Log.d(TAG, "check " + request.getCacheKey() + ", but miss.");
                     mBufferQueue.put(request);
                     continue;
                 }
@@ -133,6 +131,7 @@ public class CacheDispatcher extends Thread {
                     /**
                      * 修改代码，对于完全过期的Request，丢进缓存队列
                      */
+                    Log.d(TAG, "request " + request.getCacheKey() + "cache hit, but is expired.");
                     mBufferQueue.put(request);
                     continue;
                 }

@@ -106,9 +106,9 @@ public class BufferDispatcher extends Thread {
                 continue;
             }
 
-            Log.d(TAG, "Current Request: " + request.getClass().getName());
-            Log.d(TAG, "nextTime= " + nextTime);
-            Log.d(TAG, "endTime= " + request.getEndTime());
+            //Log.d(TAG, "Current Request: " + request.getClass().getName());
+            //Log.d(TAG, "nextTime= " + nextTime);
+            //Log.d(TAG, "endTime= " + request.getEndTime());
 
             /**
              * 如果目前还处于一个Tail内，那么立即发送Request
