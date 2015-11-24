@@ -1,5 +1,6 @@
 package framework.mobisys.netlab.framework;
 
+import android.os.SystemClock;
 import android.util.Log;
 
 import com.android.volley.NetworkResponse;
@@ -70,6 +71,8 @@ public class LStringRequest extends Request<String> {
         this.delay = delay;
         this.url = url;
         this.tag = tag;
+        setArrTime(SystemClock.elapsedRealtime());
+        setEndTime(getArrTime() + delay * 1000);
     }
 
     /**

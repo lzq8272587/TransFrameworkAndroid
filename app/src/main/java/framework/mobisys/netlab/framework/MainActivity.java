@@ -130,7 +130,7 @@ public class MainActivity extends AppCompatActivity
          * 测试我们自己写的ObjectRequest
          */
 
-        LObjectRequest lor = e3.createObjectRequest(url, 0, "ObjectTest");
+        LObjectRequest lor = e3.createObjectRequest(url, 5, "ObjectTest");
         lor.setShouldCache(false);
         e3.putObjectRequest(lor, new Response.Listener<byte[]>() {
             @Override

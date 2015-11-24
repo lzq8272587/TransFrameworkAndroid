@@ -1,5 +1,6 @@
 package framework.mobisys.netlab.framework;
 
+import android.os.SystemClock;
 import android.util.Log;
 
 import com.android.volley.NetworkResponse;
@@ -44,6 +45,13 @@ public class LObjectRequest extends Request<byte[]> {
     }
 
 
+    /**
+     * 构造函数
+     *
+     * @param url
+     * @param delay
+     * @param tag
+     */
     public LObjectRequest(String url, int delay, String tag) {
         super(Request.Method.GET, url, new Response.ErrorListener() {
             @Override
@@ -54,6 +62,8 @@ public class LObjectRequest extends Request<byte[]> {
         this.delay = delay;
         this.url = url;
         this.tag = tag;
+        setArrTime(SystemClock.elapsedRealtime());
+        setEndTime(getArrTime() + delay*1000);
     }
 
     /**
