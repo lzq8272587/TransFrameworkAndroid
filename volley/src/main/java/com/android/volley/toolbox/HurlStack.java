@@ -16,8 +16,6 @@
 
 package com.android.volley.toolbox;
 
-import android.util.Log;
-
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Request.Method;
@@ -203,8 +201,8 @@ public class HurlStack implements HttpStack {
             }
             url = rewritten;
         }
-        Log.e("HurlStack,request", request.toString());
-        Log.e("HurlStack,addheader", additionalHeaders.toString());
+        // Log.e("HurlStack,request", request.toString());
+        //Log.e("HurlStack,addheader", additionalHeaders.toString());
 
         URL parsedUrl = new URL(url);
         HttpURLConnection connection = openConnection(parsedUrl, request);
@@ -249,7 +247,7 @@ public class HurlStack implements HttpStack {
         //这里干的事情就是从Response里面读取出各种头部信息，然后添加到BasicHttpResponse里面去
         for (Entry<String, List<String>> header : connection.getHeaderFields().entrySet()) {
             if (header.getKey() != null) {
-                System.out.println("In HurlStack, " + header.getKey() + "-->" + header.getValue().get(0));
+//                System.out.println("In HurlStack, " + header.getKey() + "-->" + header.getValue().get(0));
                 Header h = new BasicHeader(header.getKey(), header.getValue().get(0));
                 response.addHeader(h);
             }

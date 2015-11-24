@@ -61,6 +61,7 @@ public class ExecutorDelivery implements ResponseDelivery {
 
     @Override
     public void postResponse(Request<?> request, Response<?> response, Runnable runnable) {
+        //Thread.currentThread().notify();
         request.markDelivered();
         request.addMarker("post-response");
         mResponsePoster.execute(new ResponseDeliveryRunnable(request, response, runnable));

@@ -76,6 +76,14 @@ public abstract class Request<T> implements Comparable<Request<T>> {
      */
     public Map<String, String> extraHeader = null;
     /**
+     * The created time of this request
+     */
+    long arrTime = 0;
+    /**
+     * The deadline of this request
+     */
+    long endTime = 0;
+    /**
      * Sequence number of this request, used to enforce FIFO ordering.
      */
     private Integer mSequence;
@@ -87,6 +95,11 @@ public abstract class Request<T> implements Comparable<Request<T>> {
      * Whether or not responses to this request should be cached.
      */
     private boolean mShouldCache = true;
+
+
+    /**
+     * 2015-11-23 add
+     */
     /**
      * Whether or not this request has been canceled.
      */
@@ -95,11 +108,6 @@ public abstract class Request<T> implements Comparable<Request<T>> {
      * Whether or not a response has been delivered for this request yet.
      */
     private boolean mResponseDelivered = false;
-
-
-    /**
-     * 2015-11-23 add
-     */
     /**
      * The retry policy for this request.
      */
@@ -173,6 +181,7 @@ public abstract class Request<T> implements Comparable<Request<T>> {
 
     /**
      * 将Request中现有的Request设置成想要的Request方式
+     *
      * @param method
      */
     public void setMethod(int method) {
@@ -580,6 +589,22 @@ public abstract class Request<T> implements Comparable<Request<T>> {
         if (mErrorListener != null) {
             mErrorListener.onErrorResponse(error);
         }
+    }
+
+    public long getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(long endTime) {
+        this.endTime = endTime;
+    }
+
+    public long getArrTime() {
+        return arrTime;
+    }
+
+    public void setArrTime(long arrTime) {
+        this.arrTime = arrTime;
     }
 
     /**

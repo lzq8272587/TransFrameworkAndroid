@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
+
 /**
  * A request dispatch queue with a thread pool of dispatchers.
  * <p/>
@@ -84,6 +85,11 @@ public class RequestQueue {
      */
     private final ResponseDelivery mDelivery;
     /**
+     * 缓存队列
+     */
+    private final PriorityBlockingQueue<Request<?>> mBufferQueue =
+            new PriorityBlockingQueue<Request<?>>();
+    /**
      * Used for generating monotonically-increasing sequence numbers for requests.
      */
     private AtomicInteger mSequenceGenerator = new AtomicInteger();
@@ -97,6 +103,11 @@ public class RequestQueue {
     private CacheDispatcher mCacheDispatcher;
     private List<RequestFinishedListener> mFinishedListeners =
             new ArrayList<RequestFinishedListener>();
+    /**
+     * 缓存队列调度器
+     */
+    private BufferDispatcher mBufferDispatcher;
+
 
     /**
      * Creates the worker pool. Processing will not begin until {@link #start()} is called.
@@ -152,6 +163,12 @@ public class RequestQueue {
             mDispatchers[i] = networkDispatcher;
             networkDispatcher.start();
         }
+
+        /**
+         * 实例化缓存队列
+         */
+        mBufferDispatcher = new BufferDispatcher(mNetworkQueue, mBufferQueue);
+        mBufferDispatcher.start();
     }
 
     /**
@@ -232,7 +249,11 @@ public class RequestQueue {
 
         // If the request is uncacheable, skip the cache queue and go straight to the network.
         if (!request.shouldCache()) {
-            mNetworkQueue.add(request);
+            //mNetworkQueue.add(request);
+            /**
+             * 修改：不把Request丢进Cache队列，而是丢进Buffer队列
+             */
+            mBufferQueue.add(request);
             return request;
         }
 
