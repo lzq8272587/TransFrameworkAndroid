@@ -44,6 +44,11 @@ public class CacheDispatcher extends Thread {
     private final BlockingQueue<Request<?>> mNetworkQueue;
 
     /**
+     * 缓存队列
+     */
+    private final BlockingQueue<Request<?>> mBufferQueue;
+
+    /**
      * The cache to read from.
      */
     private final Cache mCache;
@@ -68,12 +73,13 @@ public class CacheDispatcher extends Thread {
      * @param delivery     Delivery interface to use for posting responses
      */
     public CacheDispatcher(
-            BlockingQueue<Request<?>> cacheQueue, BlockingQueue<Request<?>> networkQueue,
+            BlockingQueue<Request<?>> cacheQueue, BlockingQueue<Request<?>> networkQueue, BlockingQueue<Request<?>> bufferQueue,
             Cache cache, ResponseDelivery delivery) {
         mCacheQueue = cacheQueue;
         mNetworkQueue = networkQueue;
         mCache = cache;
         mDelivery = delivery;
+        mBufferQueue = bufferQueue;
     }
 
     /**
@@ -111,7 +117,11 @@ public class CacheDispatcher extends Thread {
                 if (entry == null) {
                     request.addMarker("cache-miss");
                     // Cache miss; send off to the network dispatcher.
-                    mNetworkQueue.put(request);
+                    // mNetworkQueue.put(request);
+                    /**
+                     * 对于Cache未命中的request，修改代码，丢进缓存队列中
+                     */
+                    mBufferQueue.put(request);
                     continue;
                 }
 
@@ -119,7 +129,11 @@ public class CacheDispatcher extends Thread {
                 if (entry.isExpired()) {
                     request.addMarker("cache-hit-expired");
                     request.setCacheEntry(entry);
-                    mNetworkQueue.put(request);
+                    //mNetworkQueue.put(request);
+                    /**
+                     * 修改代码，对于完全过期的Request，丢进缓存队列
+                     */
+                    mBufferQueue.put(request);
                     continue;
                 }
 

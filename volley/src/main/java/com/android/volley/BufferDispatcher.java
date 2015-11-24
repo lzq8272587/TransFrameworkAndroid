@@ -39,7 +39,7 @@ public class BufferDispatcher extends Thread {
     /**
      * 上次发送时间，初始化为一个最小值
      */
-    private long lastSend = Long.MIN_VALUE;
+    private long lastSend = -1;
     /**
      * 下一次要发送的时间
      * 这个时间可以理解为还在等待处理的BufferQueue中所有Requests
@@ -57,7 +57,7 @@ public class BufferDispatcher extends Thread {
      * 设置这个Set的原因是，如果新来了一个Deadline小于nextTime的Request
      * 那么需要把队列中的所有的Request提前到这个Deadline发送
      */
-    private HashSet<Request> mCurrentRequests = null;
+    //private HashSet<Request> mCurrentRequests = null;
 
     /**
      * 缓存所有还没有处理的任务
@@ -106,6 +106,10 @@ public class BufferDispatcher extends Thread {
                 continue;
             }
 
+            Log.d(TAG, "Current Request: " + request.getClass().getName());
+            Log.d(TAG, "nextTime= " + nextTime);
+            Log.d(TAG, "endTime= " + request.getEndTime());
+
             /**
              * 如果目前还处于一个Tail内，那么立即发送Request
              * 直接丢进Network队列中
@@ -127,10 +131,24 @@ public class BufferDispatcher extends Thread {
              */
 
             /**
+             * 如果目前都没有缓存的Request了，那么这个时候肯定就是把这个Request的Dealine设置成下一个发送的时间
+             * 把这个request丢进HashSet
+             * 还要把这个request丢给handler
+             */
+            if (mCurrentRunnable.size() == 0) {
+                Log.d(TAG, "mCurrentRunnable is empty, set nextTime to the endTime of this new request.");
+                nextTime = request.getEndTime();
+                DelayedRequest dr = new DelayedRequest(request);
+                mCurrentRunnable.add(dr);
+                handler.postDelayed(dr, (nextTime - SystemClock.elapsedRealtime()));
+                continue;
+            }
+
+            /**
              * 如果当前的Request的Deadline比缓存队列里其它Request还要晚发送，把它们捆绑在一起传输
              */
             if (request.getEndTime() > nextTime) {
-                Log.d(TAG, "defer this request to transfer with other requests.");
+                Log.d(TAG, "promote this request to transfer with other requests.");
                 DelayedRequest dr = new DelayedRequest(request);
                 mCurrentRunnable.add(dr);
                 handler.postDelayed(dr, (nextTime - SystemClock.elapsedRealtime()));
@@ -197,7 +215,8 @@ public class BufferDispatcher extends Thread {
                 Log.d(TAG, "put this request to NetworkQueue, and remove it in the HashSet.");
                 mNetworkQueue.put(r);
                 mCurrentRunnable.remove(this);
-
+                lastSend = SystemClock.elapsedRealtime();
+                Log.d(TAG, "delay= " + (SystemClock.elapsedRealtime() - r.getArrTime()));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

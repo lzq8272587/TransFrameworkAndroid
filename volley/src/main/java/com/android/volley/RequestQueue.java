@@ -153,7 +153,7 @@ public class RequestQueue {
     public void start() {
         stop();  // Make sure any currently running dispatchers are stopped.
         // Create the cache dispatcher and start it.
-        mCacheDispatcher = new CacheDispatcher(mCacheQueue, mNetworkQueue, mCache, mDelivery);
+        mCacheDispatcher = new CacheDispatcher(mCacheQueue, mNetworkQueue, mBufferQueue, mCache, mDelivery);
         mCacheDispatcher.start();
 
         // Create network dispatchers (and corresponding threads) up to the pool size.
@@ -252,6 +252,12 @@ public class RequestQueue {
             //mNetworkQueue.add(request);
             /**
              * 修改：不把Request丢进Cache队列，而是丢进Buffer队列
+             */
+            /**
+             * 小提普斯：关于add和put的区别，see：http://stackoverflow.com/questions/7706666/arrayblockingqueue-and-add-vs-put-vs-capacity
+             * It's quite simple really:
+             if the queue is not full, both methods succeed;
+             if the queue is full, add() fails with an exception whereas put() blocks.
              */
             mBufferQueue.add(request);
             return request;
