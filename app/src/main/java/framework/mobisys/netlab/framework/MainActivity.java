@@ -15,9 +15,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.android.volley.RequestQueue;
 import com.android.volley.Response;
-import com.android.volley.toolbox.Volley;
 
 import framework.mobisys.netlab.transframeworkandroid.R;
 
@@ -78,7 +76,7 @@ public class MainActivity extends AppCompatActivity
 //                    }
 //                });
 //        // Access the RequestQueue through your singleton class.
-        RequestQueue queue = Volley.newRequestQueue(this);
+//        RequestQueue queue = Volley.newRequestQueue(this);
 //        System.out.println("Add request to queue");
 //        queue.add(jsObjRequest);
 
@@ -91,7 +89,7 @@ public class MainActivity extends AppCompatActivity
         /**
          * 测试看能不能下载内容
          */
-        LStringRequest lsr = e3.createStringRequest(url, 0, "StringTest");
+        LStringRequest lsr = e3.createStringRequest(url, 7, "StringTest");
         e3.putStringRequest(lsr, new Response.Listener() {
             @Override
             public void onResponse(Object response) {
