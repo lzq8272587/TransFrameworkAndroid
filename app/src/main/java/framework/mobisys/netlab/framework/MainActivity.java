@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity
         /**
          * 2015-11-23-测试更新之后的同步/异步API
          */
-        E3Framework e3 = new E3Framework(this);
+        E3Framework e3 = E3Framework.getInstance(this);
 
         /**
          * 测试看能不能下载内容

@@ -1,5 +1,7 @@
 package framework.mobisys.netlab.framework;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.os.SystemClock;
 import android.util.Log;
 
@@ -13,7 +15,7 @@ import com.android.volley.toolbox.HttpHeaderParser;
  * Created by LZQ on 11/15/2015.
  * 对通用的Object类型的数据传输进行封装的Requets类
  */
-public class LObjectRequest extends Request<byte[]> {
+public class LObjectRequest extends Request<byte[]> implements Parcelable {
 
     final String TAG = "LObjectRequest";
 
@@ -113,4 +115,27 @@ public class LObjectRequest extends Request<byte[]> {
         this.sListener = sListener;
     }
 
+    /**
+     * Describe the kinds of special objects contained in this Parcelable's
+     * marshalled representation.
+     *
+     * @return a bitmask indicating the set of special object types marshalled
+     * by the Parcelable.
+     */
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    /**
+     * Flatten this object in to a Parcel.
+     *
+     * @param dest  The Parcel in which the object should be written.
+     * @param flags Additional flags about how the object should be written.
+     *              May be 0 or {@link #PARCELABLE_WRITE_RETURN_VALUE}.
+     */
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+
+    }
 }

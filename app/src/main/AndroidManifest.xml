@@ -22,6 +22,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name="framework.mobisys.netlab.framework.E3Service"
+            android:enabled="true"
+            android:exported="true"></service>
     </application>
 
 </manifest>

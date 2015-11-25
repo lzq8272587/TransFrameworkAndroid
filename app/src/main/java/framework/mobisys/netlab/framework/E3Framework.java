@@ -1,6 +1,10 @@
 package framework.mobisys.netlab.framework;
 
 import android.content.Context;
+import android.content.Intent;
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.util.Log;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -14,18 +18,35 @@ import org.json.JSONObject;
 /**
  * Created by LZQ on 11/11/2015.
  */
-public class E3Framework {
+public class E3Framework implements Parcelable {
 
+    private static E3Framework instance = null;
+    private static E3Service service = null;
+    private final String TAG = "E3Framework";
     private Context ctx;
-
     private RequestQueue queue = null;
 
-    public E3Framework(Context c) {
+    private E3Framework(Context c) {
         ctx = c;
         /**
          * 调用这个函数的时候，queue已经创建并且启动了
          */
         queue = Volley.newRequestQueue(ctx);
+
+        /**
+         * 启动后台Service
+         */
+        Log.d(TAG, "start e3 service");
+        c.startService(new Intent(c, E3Service.class));
+    }
+
+    public static E3Framework getInstance(Context c) {
+        if (instance != null) {
+            return instance;
+        } else {
+            instance = new E3Framework(c);
+            return instance;
+        }
     }
 
     public void addUploadRequest(UploadRequest ur) {
@@ -154,4 +175,27 @@ public class E3Framework {
     }
 
 
+    /**
+     * Describe the kinds of special objects contained in this Parcelable's
+     * marshalled representation.
+     *
+     * @return a bitmask indicating the set of special object types marshalled
+     * by the Parcelable.
+     */
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    /**
+     * Flatten this object in to a Parcel.
+     *
+     * @param dest  The Parcel in which the object should be written.
+     * @param flags Additional flags about how the object should be written.
+     *              May be 0 or {@link #PARCELABLE_WRITE_RETURN_VALUE}.
+     */
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+
+    }
 }
