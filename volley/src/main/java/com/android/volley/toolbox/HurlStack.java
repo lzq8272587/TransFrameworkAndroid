@@ -6,7 +6,7 @@
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,13 +16,12 @@
 
 package com.android.volley.toolbox;
 
-import android.app.Application;
-import android.content.Context;
-import android.provider.ContactsContract;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Request.Method;
+import com.android.volley.Response;
+import com.android.volley.Response.ProgressListener;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -40,23 +39,16 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
-import android.app.Activity;
-import android.os.Bundle;
-import android.os.Environment;
-import android.view.Menu;
 
 /**
  * An {@link HttpStack} based on {@link HttpURLConnection}.
@@ -66,6 +58,10 @@ public class HurlStack implements HttpStack {
     private static final String HEADER_CONTENT_TYPE = "Content-Type";
     private final UrlRewriter mUrlRewriter;
     private final SSLSocketFactory mSslSocketFactory;
+    public static String HurlStackThreadName;
+    public static MyThread HurlStackThread;
+    public static boolean isNetworkConnected = false;
+
 
     public HurlStack() {
         this(null);
@@ -96,7 +92,7 @@ public class HurlStack implements HttpStack {
      * @see <a href="https://tools.ietf.org/html/rfc7230#section-3.3">RFC 7230 section 3.3</a>
      */
     private static boolean hasResponseBody(int requestMethod, int responseCode) {
-        return requestMethod != Request.Method.HEAD
+        return requestMethod != Method.HEAD
                 && !(HttpStatus.SC_CONTINUE <= responseCode && responseCode < HttpStatus.SC_OK)
                 && responseCode != HttpStatus.SC_NO_CONTENT
                 && responseCode != HttpStatus.SC_NOT_MODIFIED;
@@ -209,76 +205,118 @@ public class HurlStack implements HttpStack {
             }
             url = rewritten;
         }
+        HurlStackThread = new MyThread();
+        HurlStackThreadName = HurlStackThread.getName();
+        synchronized (HurlStackThread) {
+            HurlStackThread.start();
+        }
         URL parsedUrl = new URL(url);
         HttpURLConnection connection = openConnection(parsedUrl, request);
         for (String headerName : map.keySet()) {
             connection.addRequestProperty(headerName, map.get(headerName));
         }
         setConnectionParametersForRequest(connection, request);
-        InputStream inputStream;
-        //------------------------------modification starts from here------------------------------//
-        int nStartPos = 0;
-        int timeout = 15000;
-        int blockSize = 8;
-        int NUMLIMIT_FAIL = 3;
-        int nRead, failedCnt;
-        long nEndPos = 3000000;
-        byte[] b = new byte[blockSize];
-
-        String sPath = "/data/data/framework.mobisys.netlab.transframeworkandroid/download.jpg";
-        FileOutputStream f = new FileOutputStream(new File(sPath));
-        String sProperty = "bytes=" + nStartPos + "-" + nEndPos;   //sProperty设置的是开始下载的位置，即断点。若nStartPos为0则完整下载整个文件
-//        connection.setRequestProperty("RANGE" , sProperty);
-        inputStream = new BufferedInputStream(connection.getInputStream());
-        System.out.println("Begin downloading...");
-        while (true) {
-            failedCnt = 1;
-            while (nStartPos < nEndPos && failedCnt <= NUMLIMIT_FAIL) {
-                try {
-                    nRead = inputStream.read(b, 0, blockSize);
-                    if (nRead > 0) {
-                        f.write(b, 0, nRead);
-                        nStartPos += nRead;
-                    } else {
-                        inputStream = connection.getErrorStream();
-                        break;
-                    }
-//                    System.out.println(nStartPos*100/nEndPos+"%");
-                } catch (Exception e) {
-                    System.out.println("Network error, try to reconnect (" + failedCnt + ")");
-                    failedCnt++;
-
-                    connection.disconnect();
-                    connection = openConnection(parsedUrl, request);
-                    connection.setConnectTimeout(timeout);
-                    connection.setReadTimeout(timeout);
-                    sProperty = "bytes=" + nStartPos + "-" + nEndPos;   //sProperty设置的是开始下载的位置，即断点。若nStartPos为0则完整下载整个文件
-                    connection.setRequestProperty("RANGE", sProperty);
-                    //当然也可以这么写：httpConnection.setRequestProperty("RANGE","bytes=50-20070");
-                    inputStream = connection.getInputStream();
-                }
-            }
-            if (failedCnt > NUMLIMIT_FAIL) {
-
-            } else {
-                System.out.println("Download successfully!");
-                f.close();
+        InputStream inputStream ;
+        ProgressListener progressListener = null;
+        if (request instanceof Response.ProgressListener) {
+            progressListener = (ProgressListener) request;
+        }
+        while(true) {
+            try {
+                connection.disconnect();
+                connection = openConnection(parsedUrl, request);
+                inputStream = connection.getInputStream();
                 break;
+            } catch (Exception e) {
+                continue;
             }
         }
-        //------------------------------modification ends here------------------------------//
+        String sPath = "/data/data/framework.mobisys.netlab.transframeworkandroid/download";
+        FileOutputStream f = new FileOutputStream(new File(sPath));
+        int nStartPos = 0;
+        int blockSize = 512;
+        int timeout = 1500000;
+        int NUMLIMIT_FAIL = 3;
+        int nRead, failedCnt;
+        long nEndPos = connection.getContentLength();
+        byte[] b = new byte[blockSize];
+        String sProperty ;   //sProperty设置的是开始下载的位置，即断点。若nStartPos为0则完整下载整个文件
+        while (true) {
+            failedCnt = 1;
+            try {
+                while (nStartPos < nEndPos && failedCnt <= NUMLIMIT_FAIL) {
+                    try {
+                        nRead = inputStream.read(b, 0, blockSize);
+                        if(nRead>0) {
+                            f.write(b, 0, nRead);
+                            nStartPos += nRead;
+                            if (null != progressListener) {
+                                progressListener.onProgress(nStartPos, nEndPos);//返回进度
+                            }
+                        }else
+                        {
+                            break;
+                        }
+                    } catch (Exception e) {
+                        failedCnt++;
+                        while(true) {
+                            try {
+                                connection.disconnect();
+                                connection = openConnection(parsedUrl, request);
+                                connection.setConnectTimeout(timeout);
+                                connection.setReadTimeout(timeout);
+                                sProperty = "bytes="  + nStartPos +  "-" +nEndPos;   //sProperty设置的是开始下载的位置，即断点。若nStartPos为0则完整下载整个文件
+                                connection.setRequestProperty("RANGE" , sProperty);
+                                inputStream = connection.getInputStream();
+                                break;
+                            } catch (Exception e2) {
+                                continue;
+                            }
+                        }
+                    }
+                }
 
+                if (failedCnt > NUMLIMIT_FAIL) {
+                    while (isNetworkConnected == false) ;
+                    synchronized (HurlStackThread) {
+                        try {
+                            HurlStackThread.wait();
+                            /**这里要注意：实际上是挂起的当前进程！
+                             * jdk的解释中，说wait()的作用是让“当前线程”等待，而“当前线程”是指正在cpu上运行的线程！
+                             */
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                else {
+                    System.out.println("Download successfully!");
+                    f.close();
+                    break;
+                }
+            }catch (Exception e1){
+                while (isNetworkConnected == false) ;
+                synchronized (HurlStackThread) {
+                    try {
+                        HurlStackThread.wait();
+                        /**这里要注意：实际上是挂起的当前进程！
+                         * jdk的解释中，说wait()的作用是让“当前线程”等待，而“当前线程”是指正在cpu上运行的线程！
+                         */
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
         // Initialize HttpResponse with data from the HttpURLConnection.
         ProtocolVersion protocolVersion = new ProtocolVersion("HTTP", 1, 1);
-        int responseCode=200;
-        responseCode = connection.getResponseCode();
+        int responseCode = 200;
         if (responseCode == -1) {
             // -1 is returned by getResponseCode() if the response code could not be retrieved.
             // Signal to the caller that something was wrong with the connection.
             throw new IOException("Could not retrieve response code from HttpUrlConnection.");
         }
-
-        inputStream=new FileInputStream(sPath);
+        inputStream = new FileInputStream(sPath);
         BasicHttpEntity entity = new BasicHttpEntity();
         StatusLine responseStatus = new BasicStatusLine(protocolVersion, responseCode, "OK");
         BasicHttpResponse response = new BasicHttpResponse(responseStatus);
@@ -287,11 +325,11 @@ public class HurlStack implements HttpStack {
         entity.setContentEncoding(connection.getContentEncoding());
         entity.setContentType(connection.getContentType());
         response.setEntity(entity);
-//        if (hasResponseBody(request.getMethod(), responseStatus.getStatusCode())) {
-//            response.setEntity(entityFromConnection(connection, parsedUrl, request));
-//        }
+        //        if (hasResponseBody(request.getMethod(), responseStatus.getStatusCode())) {
+        //            response.setEntity(entityFromConnection(connection, parsedUrl, request));
+        //        }
 
-        for (Entry<String, List<String>> header : connection.getHeaderFields().entrySet()) {
+        for (Map.Entry<String, List<String>> header : connection.getHeaderFields().entrySet()) {
             if (header.getKey() != null) {
                 Header h = new BasicHeader(header.getKey(), header.getValue().get(0));
                 response.addHeader(h);

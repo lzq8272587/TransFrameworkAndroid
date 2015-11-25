@@ -95,4 +95,11 @@ public class Response<T> {
          */
         void onErrorResponse(VolleyError error);
     }
+    /** Callback interface for delivering the progress of the responses. */
+    public interface ProgressListener {
+        /**
+         * Callback method thats called on bytes transfer.
+         */
+        void onProgress(long transferredBytes, long totalSize);
+    }
 }

@@ -25,6 +25,7 @@ import android.os.Looper;
 import android.text.TextUtils;
 
 import com.android.volley.VolleyLog.MarkerLog;
+import com.android.volley.Response.ProgressListener;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -36,7 +37,7 @@ import java.util.Map;
  *
  * @param <T> The type of parsed response this request expects.
  */
-public abstract class Request<T> implements Comparable<Request<T>> {
+public abstract class Request<T> implements Comparable<Request<T>>,ProgressListener {
 
     /**
      * Default encoding for POST or PUT parameters. See {@link #getParamsEncoding()}.
@@ -63,6 +64,10 @@ public abstract class Request<T> implements Comparable<Request<T>> {
      * Listener interface for errors.
      */
     private final Response.ErrorListener mErrorListener;
+    /**
+     * Listener interface for progress
+     */
+    private ProgressListener mProgressListener;
     /**
      * Sequence number of this request, used to enforce FIFO ordering.
      */
@@ -599,5 +604,22 @@ public abstract class Request<T> implements Comparable<Request<T>> {
         int OPTIONS = 5;
         int TRACE = 6;
         int PATCH = 7;
+    }
+    /**
+     *set OnProgressListener
+     */
+    public void setOnProgressListener(ProgressListener listener){
+        mProgressListener = listener;
+    }
+
+    /**
+     * implements onProgress method
+     * @param transferredBytes
+     * @param totalSize
+     */
+    public void onProgress(long transferredBytes, long totalSize) {
+        if(null != mProgressListener){
+            mProgressListener.onProgress(transferredBytes, totalSize);
+        }
     }
 }
