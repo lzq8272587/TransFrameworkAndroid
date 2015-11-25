@@ -6,7 +6,6 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 
-import mobisys.framework.aidl.E3RemoteService;
 
 public class E3Service extends Service {
 
