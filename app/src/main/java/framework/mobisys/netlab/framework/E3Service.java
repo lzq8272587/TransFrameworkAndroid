@@ -3,12 +3,20 @@ package framework.mobisys.netlab.framework;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
+import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.util.Log;
+
+import com.android.volley.Response;
 
 
 public class E3Service extends Service {
 
+    private RemoteCallbackList<ICallback> mCallbacks = new RemoteCallbackList<ICallback>();
+    private String TAG = "E3Service";
+
+    // private IService.Stub
+    private E3Framework e3Framework = null;
     private final E3RemoteService.Stub e3Binder = new E3RemoteService.Stub() {
 
         /**
@@ -34,10 +42,81 @@ public class E3Service extends Service {
         public void basicTypes(int anInt, long aLong, boolean aBoolean, float aFloat, double aDouble, String aString) throws RemoteException {
 
         }
+
+        @Override
+        public void putStringRequest(String url, int delay, String tag, final ICallback callback) throws RemoteException {
+            Log.d(TAG, url + delay + tag);
+            LStringRequest sr = e3Framework.createStringRequest(url, delay, tag);
+            e3Framework.putStringRequest(sr, new Response.Listener<String>() {
+                @Override
+                public void onResponse(String response) {
+                    try {
+                        Log.d(TAG, "onResponse, get the result for request.");
+                        callback.CallbackString(response);
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+
+        }
+
+        @Override
+        public void putObjectRequest(String url, int delay, String tag, final ICallback callback) throws RemoteException {
+            Log.d(TAG, url + delay + tag);
+            LObjectRequest or = e3Framework.createObjectRequest(url, delay, tag);
+            e3Framework.putObjectRequest(or, new Response.Listener<byte[]>() {
+                @Override
+                public void onResponse(byte[] response) {
+                    try {
+                        Log.d(TAG, "onResponse, get the result for Object request. length=" + response.length);
+                        IByteArray b = new IByteArray();
+                        b.setByte(response);
+                        //b.setByte(response);
+                        Log.d(TAG, "before callbackobject.");
+                        callback.CallbackObject(b);
+                        Log.d(TAG, "after callbackobject.");
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }, null);
+        }
+
+        @Override
+        public String performStringRequest() throws RemoteException {
+            return null;
+        }
+
+        @Override
+        public byte[] performObjectRequest() throws RemoteException {
+            return new byte[0];
+        }
+
+        @Override
+        public void deleteRequest(String tag) throws RemoteException {
+
+        }
+
+        @Override
+        public void registerCallback(ICallback cb) throws RemoteException {
+            if (cb != null) {
+                Log.d(TAG, "registerCallback is called.");
+                //mCallbacks.register(cb);
+                cb.showResult(666);
+            }
+        }
+
+        @Override
+        public void unregisterCallback(ICallback cb) throws RemoteException {
+            if (cb != null) {
+                //mCallbacks.unregister(cb);
+            }
+        }
     };
-    private String TAG = "E3Service";
 
     public E3Service() {
+        E3Framework e3 = E3Framework.getInstance(this);
     }
 
     /**
@@ -46,8 +125,8 @@ public class E3Service extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d(TAG, "onCreate E3Service.");
-
+        Log.d(TAG, "onCreate E3Service. create the framework");
+        e3Framework = E3Framework.getInstance(this);
 
     }
 
