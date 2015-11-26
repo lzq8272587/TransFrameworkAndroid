@@ -95,11 +95,11 @@ public class Response<T> {
          */
         void onErrorResponse(VolleyError error);
     }
-
-    /**
-     * 增加一个反馈下载进度的Listener
-     */
+    /** Callback interface for delivering the progress of the responses. */
     public interface ProgressListener {
-        void onProgress(int percentage);
+        /**
+         * Callback method thats called on bytes transfer.
+         */
+        void onProgress(long transferredBytes, long totalSize);
     }
 }

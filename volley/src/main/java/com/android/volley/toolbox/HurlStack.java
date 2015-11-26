@@ -16,9 +16,12 @@
 
 package com.android.volley.toolbox;
 
+
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Request.Method;
+import com.android.volley.Response;
+import com.android.volley.Response.ProgressListener;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -31,7 +34,11 @@ import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicHttpResponse;
 import org.apache.http.message.BasicStatusLine;
 
+import java.io.BufferedInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -39,7 +46,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
@@ -52,6 +58,10 @@ public class HurlStack implements HttpStack {
     private static final String HEADER_CONTENT_TYPE = "Content-Type";
     private final UrlRewriter mUrlRewriter;
     private final SSLSocketFactory mSslSocketFactory;
+    public static String HurlStackThreadName;
+    public static MyThread HurlStackThread;
+    public static boolean isNetworkConnected = false;
+
 
     public HurlStack() {
         this(null);
@@ -82,7 +92,7 @@ public class HurlStack implements HttpStack {
      * @see <a href="https://tools.ietf.org/html/rfc7230#section-3.3">RFC 7230 section 3.3</a>
      */
     private static boolean hasResponseBody(int requestMethod, int responseCode) {
-        return requestMethod != Request.Method.HEAD
+        return requestMethod != Method.HEAD
                 && !(HttpStatus.SC_CONTINUE <= responseCode && responseCode < HttpStatus.SC_OK)
                 && responseCode != HttpStatus.SC_NO_CONTENT
                 && responseCode != HttpStatus.SC_NOT_MODIFIED;
@@ -94,14 +104,18 @@ public class HurlStack implements HttpStack {
      * @param connection
      * @return an HttpEntity populated with data from <code>connection</code>.
      */
-    private static HttpEntity entityFromConnection(HttpURLConnection connection) {
+    private HttpEntity entityFromConnection(HttpURLConnection connection, URL parsedUrl, Request request) {
         BasicHttpEntity entity = new BasicHttpEntity();
         InputStream inputStream;
         try {
-            inputStream = connection.getInputStream();
+            inputStream = new BufferedInputStream(connection.getInputStream());
+            //----------------------------modified part starts here----------------------------//
+            //----------------------------modified part ends here----------------------------//
+
         } catch (IOException ioe) {
             inputStream = connection.getErrorStream();
         }
+
         entity.setContent(inputStream);
         entity.setContentLength(connection.getContentLength());
         entity.setContentEncoding(connection.getContentEncoding());
@@ -177,16 +191,6 @@ public class HurlStack implements HttpStack {
         }
     }
 
-    /**
-     * 各部门注意了！！！！这里才是真正的处理Connection的地方！
-     *
-     * @param request           the request to perform
-     * @param additionalHeaders additional headers to be sent together with
-     *                          {@link Request#getHeaders()}
-     * @return
-     * @throws IOException
-     * @throws AuthFailureError
-     */
     @Override
     public HttpResponse performRequest(Request<?> request, Map<String, String> additionalHeaders)
             throws IOException, AuthFailureError {
@@ -201,69 +205,146 @@ public class HurlStack implements HttpStack {
             }
             url = rewritten;
         }
-        // Log.e("HurlStack,request", request.toString());
-        //Log.e("HurlStack,addheader", additionalHeaders.toString());
-
+        HurlStackThread = new MyThread();
+        HurlStackThreadName = HurlStackThread.getName();
+        synchronized (HurlStackThread) {
+            HurlStackThread.start();
+        }
         URL parsedUrl = new URL(url);
         HttpURLConnection connection = openConnection(parsedUrl, request);
-        // System.out.println("In HurlStack.performRequest() "+connection.getClass().getName());
-
-        //根据Request中的头部信息，以及额外的头部信息，设置HttpURLConnection中的头部
         for (String headerName : map.keySet()) {
             connection.addRequestProperty(headerName, map.get(headerName));
         }
-        //根据Request的方式，设置HTTP的请求类型是GET,PUT,POST还是其它
-        //里面会调用Request的request.getMethod()以及Connection的connection.setRequestMethod("GET")方法
         setConnectionParametersForRequest(connection, request);
+        InputStream inputStream ;
+        ProgressListener progressListener = null;
+        if (request instanceof Response.ProgressListener) {
+            progressListener = (ProgressListener) request;
+        }
+        while(true) {
+            try {
+                connection.disconnect();
+                connection = openConnection(parsedUrl, request);
+                inputStream = connection.getInputStream();
+                break;
+            } catch (Exception e) {
+                continue;
+            }
+        }
+        String sPath = "/data/data/framework.mobisys.netlab.transframeworkandroid/download";
+        FileOutputStream f = new FileOutputStream(new File(sPath));
+        int nStartPos = 0;
+        int blockSize = 512;
+        int timeout = 1500000;
+        int NUMLIMIT_FAIL = 3;
+        int nRead, failedCnt;
+        long nEndPos = connection.getContentLength();
+        byte[] b = new byte[blockSize];
+        String sProperty ;   //sProperty设置的是开始下载的位置，即断点。若nStartPos为0则完整下载整个文件
+        while (true) {
+            failedCnt = 1;
+            try {
+                while (nStartPos < nEndPos && failedCnt <= NUMLIMIT_FAIL) {
+                    try {
+                        nRead = inputStream.read(b, 0, blockSize);
+                        if(nRead>0) {
+                            f.write(b, 0, nRead);
+                            nStartPos += nRead;
+                            if (null != progressListener) {
+                                progressListener.onProgress(nStartPos, nEndPos);//返回进度
+                            }
+                        }else
+                        {
+                            break;
+                        }
+                    } catch (Exception e) {
+                        failedCnt++;
+                        while(true) {
+                            try {
+                                connection.disconnect();
+                                connection = openConnection(parsedUrl, request);
+                                connection.setConnectTimeout(timeout);
+                                connection.setReadTimeout(timeout);
+                                sProperty = "bytes="  + nStartPos +  "-" +nEndPos;   //sProperty设置的是开始下载的位置，即断点。若nStartPos为0则完整下载整个文件
+                                connection.setRequestProperty("RANGE" , sProperty);
+                                inputStream = connection.getInputStream();
+                                break;
+                            } catch (Exception e2) {
+                                continue;
+                            }
+                        }
+                    }
+                }
 
-        //设置HTTP的版本
+                if (failedCnt > NUMLIMIT_FAIL) {
+                    while (isNetworkConnected == false) ;
+                    synchronized (HurlStackThread) {
+                        try {
+                            HurlStackThread.wait();
+                            /**这里要注意：实际上是挂起的当前进程！
+                             * jdk的解释中，说wait()的作用是让“当前线程”等待，而“当前线程”是指正在cpu上运行的线程！
+                             */
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                else {
+                    System.out.println("Download successfully!");
+                    f.close();
+                    break;
+                }
+            }catch (Exception e1){
+                while (isNetworkConnected == false) ;
+                synchronized (HurlStackThread) {
+                    try {
+                        HurlStackThread.wait();
+                        /**这里要注意：实际上是挂起的当前进程！
+                         * jdk的解释中，说wait()的作用是让“当前线程”等待，而“当前线程”是指正在cpu上运行的线程！
+                         */
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        // Initialize HttpResponse with data from the HttpURLConnection.
         ProtocolVersion protocolVersion = new ProtocolVersion("HTTP", 1, 1);
-
-        //从Connection中读取状态码
-        int responseCode = connection.getResponseCode();
-
+        int responseCode = 200;
         if (responseCode == -1) {
             // -1 is returned by getResponseCode() if the response code could not be retrieved.
             // Signal to the caller that something was wrong with the connection.
             throw new IOException("Could not retrieve response code from HttpUrlConnection.");
         }
-
-        StatusLine responseStatus = new BasicStatusLine(protocolVersion,
-                connection.getResponseCode(), connection.getResponseMessage());
-
+        inputStream = new FileInputStream(sPath);
+        BasicHttpEntity entity = new BasicHttpEntity();
+        StatusLine responseStatus = new BasicStatusLine(protocolVersion, responseCode, "OK");
         BasicHttpResponse response = new BasicHttpResponse(responseStatus);
+        entity.setContent(inputStream);
+        entity.setContentLength(connection.getContentLength());
+        entity.setContentEncoding(connection.getContentEncoding());
+        entity.setContentType(connection.getContentType());
+        response.setEntity(entity);
+        //        if (hasResponseBody(request.getMethod(), responseStatus.getStatusCode())) {
+        //            response.setEntity(entityFromConnection(connection, parsedUrl, request));
+        //        }
 
-        //下面的这个hasResponseBody就是根据Request的请求类型，以及Response返回的状态码，判断这到底是不是一个有body的Response
-        //如果有，调用setEntity函数。注意这里getStatusCode返回的就是状态码
-        if (hasResponseBody(request.getMethod(), responseStatus.getStatusCode())) {
-            //这里的entityFromConnection函数，本质上干的事情就是从connection里面抽取出InputStream
-            //然后创建了一个BasicHttpEntity，把InputStream，ContentLength，等等一系列的HTTP头部参数传进去了
-            //最后把这个Entity放进BasicHttpResponse这个方法里面。执行到这一步的时候，下载内容应该装在HTTP的缓存中
-            //这里的Entity最终会被转变成byte[]，放进response里面去。
-            response.setEntity(entityFromConnection(connection));
-        }
-
-
-        //这里干的事情就是从Response里面读取出各种头部信息，然后添加到BasicHttpResponse里面去
-        for (Entry<String, List<String>> header : connection.getHeaderFields().entrySet()) {
+        for (Map.Entry<String, List<String>> header : connection.getHeaderFields().entrySet()) {
             if (header.getKey() != null) {
-//                System.out.println("In HurlStack, " + header.getKey() + "-->" + header.getValue().get(0));
                 Header h = new BasicHeader(header.getKey(), header.getValue().get(0));
                 response.addHeader(h);
             }
         }
-        //Log.e("HurlStack,request", response.t.toString());
+        connection.disconnect();
         return response;
     }
+
 
     /**
      * Create an {@link HttpURLConnection} for the specified {@code url}.
      */
     protected HttpURLConnection createConnection(URL url) throws IOException {
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        // System.out.println("try: "+conn.getClass().getName());
-        return conn;
-        //return (HttpURLConnection) url.openConnection();
+        return (HttpURLConnection) url.openConnection();
     }
 
     /**

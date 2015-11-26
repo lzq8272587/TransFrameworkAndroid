@@ -137,7 +137,7 @@ public class MainActivity extends AppCompatActivity
             }
         }, new Response.ProgressListener() {
             @Override
-            public void onProgress(int percentage) {
+            public void onProgress(long transferredBytes, long totalSize) {
 
             }
         });

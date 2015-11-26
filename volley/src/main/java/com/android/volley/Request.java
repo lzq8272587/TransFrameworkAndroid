@@ -25,6 +25,7 @@ import android.os.Looper;
 import android.text.TextUtils;
 
 import com.android.volley.VolleyLog.MarkerLog;
+import com.android.volley.Response.ProgressListener;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -56,6 +57,10 @@ public abstract class Request<T> implements Comparable<Request<T>> {
     private final int mDefaultTrafficStatsTag;
     /**
      * Listener interface for errors.
+     */
+    private ProgressListener mProgressListener;
+    /**
+     * Listener interface for progress
      */
     private final Response.ErrorListener mErrorListener;
     /**
@@ -654,5 +659,22 @@ public abstract class Request<T> implements Comparable<Request<T>> {
         int OPTIONS = 5;
         int TRACE = 6;
         int PATCH = 7;
+    }
+    /**
+     *set OnProgressListener
+     */
+    public void setOnProgressListener(ProgressListener listener){
+        mProgressListener = listener;
+    }
+
+    /**
+     * implements onProgress method
+     * @param transferredBytes
+     * @param totalSize
+     */
+    public void onProgress(long transferredBytes, long totalSize) {
+        if(null != mProgressListener){
+            mProgressListener.onProgress(transferredBytes, totalSize);
+        }
     }
 }
