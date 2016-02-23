@@ -40,6 +40,21 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
+
+                E3Framework e3 = E3Framework.getInstance(MainActivity.this);
+                String url = "http://52.88.216.252/system.png";
+                LObjectRequest lor = e3.createObjectRequest(url, 5, "ObjectTest");
+                lor.setShouldCache(false);
+                e3.putObjectRequest(lor, new Response.Listener<byte[]>() {
+                    @Override
+                    public void onResponse(byte[] response) {
+                        //imageView.setImageBitmap(Tools.getBitmap(response));
+                    }
+                }, new Response.ProgressListener() {
+                    @Override
+                    public void onProgress(long transferredBytes, long totalSize) {
+                    }
+                });
             }
         });
 
@@ -89,7 +104,7 @@ public class MainActivity extends AppCompatActivity
         /**
          * 测试看能不能下载内容
          */
-        LStringRequest lsr = e3.createStringRequest(url, 7, "StringTest");
+        LStringRequest lsr = e3.createStringRequest(url, 5, "StringTest");
         e3.putStringRequest(lsr, new Response.Listener() {
             @Override
             public void onResponse(Object response) {
@@ -129,7 +144,7 @@ public class MainActivity extends AppCompatActivity
          */
 
         LObjectRequest lor = e3.createObjectRequest(url, 5, "ObjectTest");
-        lor.setShouldCache(true);
+        lor.setShouldCache(false);
         e3.putObjectRequest(lor, new Response.Listener<byte[]>() {
             @Override
             public void onResponse(byte[] response) {
@@ -138,7 +153,6 @@ public class MainActivity extends AppCompatActivity
         }, new Response.ProgressListener() {
             @Override
             public void onProgress(long transferredBytes, long totalSize) {
-
             }
         });
 
