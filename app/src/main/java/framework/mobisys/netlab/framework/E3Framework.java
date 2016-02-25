@@ -1,11 +1,11 @@
 package framework.mobisys.netlab.framework;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.Log;
 
+import com.android.volley.ContextAdaptor;
+import com.android.volley.ERequest;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -23,11 +23,22 @@ public class E3Framework implements Parcelable {
     private static E3Framework instance = null;
     private static E3Service service = null;
     private final String TAG = "E3Framework";
+    private final int MAX_DELAY = Integer.MAX_VALUE;
     private Context ctx;
     private RequestQueue queue = null;
+    private Adaptation adaptation = null;
+
+
+    private ContextAdaptor ctxadaptor = null;
+
 
     private E3Framework(Context c) {
         ctx = c;
+        adaptation = new Adaptation(c);
+        adaptation.isForeground(c.getPackageName());
+        adaptation.getNetWorkType();
+
+//        ctxadaptor= new ContextAdaptor(ctx, );
         /**
          * 调用这个函数的时候，queue已经创建并且启动了
          */
@@ -36,8 +47,8 @@ public class E3Framework implements Parcelable {
         /**
          * 启动后台Service
          */
-        Log.d(TAG, "start e3 service");
-        c.startService(new Intent(c, E3Service.class));
+        //Log.d(TAG, "start e3 service");
+        //c.startService(new Intent(c, E3Service.class));
     }
 
     public static E3Framework getInstance(Context c) {
@@ -96,7 +107,6 @@ public class E3Framework implements Parcelable {
 
     /**
      * 利用指定的url，最大可容忍delay，以及tag创建ObjectRequest
-     *
      * @param url
      * @param delay
      * @param tag
@@ -198,4 +208,73 @@ public class E3Framework implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
 
     }
+
+
+    /**
+     * 2016-02-23-Revision, MobiSys paper reject, start on MobiCom (Deadline: 2016-03-15)
+     */
+
+    /**
+     * 带超时时间设置的Request创建方法。
+     *
+     * @param url
+     * @param property
+     * @param delay
+     * @param tag
+     * @return
+     */
+    public ERequest createRequest(String url, int property, int delay, String tag) {
+        ERequest er = new ERequest(url, property, delay, tag);
+        return er;
+    }
+
+    /**
+     * 不带超时时间设置的Request创建方法。
+     *
+     * @param url
+     * @param property
+     * @param tag
+     * @return
+     */
+    public ERequest createRequest(String url, int property, String tag) {
+        ERequest er = new ERequest(url, property, tag);
+        String AppInfo = ctx.getPackageName();
+        er.setAppInfo(AppInfo);
+        return er;
+    }
+
+    /**
+     * 以同步的方式执行Request，不带超时时间设置的调用方法。
+     * 同步方法会在后续工作中再补充，目前主要关注异步调用方法。
+     */
+    public void performERequest() {
+
+    }
+
+    /**
+     * 不带超时设置,也不带进度条的异步调用方法。
+     */
+    public void putERequest(ERequest er, Response.Listener rl) {
+        putERequest(er, MAX_DELAY, null, rl, null);
+    }
+
+    /**
+     * 不带超时设置,但是带进度条的异步调用方法。
+     */
+    public void putERequest(ERequest er, Response.Listener rl, Response.ProgressListener pl) {
+        putERequest(er, MAX_DELAY, null, rl, pl);
+    }
+
+    /**
+     * 带超时设置,也带进度条的异步调用方法。
+     */
+    public void putERequest(ERequest er, int delay, Response.TimeoutListener tl, Response.Listener rl, Response.ProgressListener pl) {
+        er.setListener(rl);
+        er.setProgressListener(pl);
+        er.setTimeoutListener(tl);
+        queue.add(er);
+    }
+
+
+
 }
