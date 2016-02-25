@@ -102,4 +102,16 @@ public class Response<T> {
          */
         void onProgress(long transferredBytes, long totalSize);
     }
+
+
+    /**
+     * Callback interface for notifying timeout.
+     */
+    public interface TimeoutListener {
+        /**
+         * Callback method thats called on bytes transfer.
+         */
+        void onTimeout();
+    }
+
 }

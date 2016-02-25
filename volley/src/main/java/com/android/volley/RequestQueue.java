@@ -16,6 +16,7 @@
 
 package com.android.volley;
 
+import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -90,6 +91,10 @@ public class RequestQueue {
     private final PriorityBlockingQueue<Request<?>> mBufferQueue =
             new PriorityBlockingQueue<Request<?>>();
     /**
+     * 用于设置Context
+     */
+    Context ctx = null;
+    /**
      * Used for generating monotonically-increasing sequence numbers for requests.
      */
     private AtomicInteger mSequenceGenerator = new AtomicInteger();
@@ -107,7 +112,10 @@ public class RequestQueue {
      * 缓存队列调度器
      */
     private BufferDispatcher mBufferDispatcher;
-
+    /**
+     * 环境适配器
+     */
+    private ContextAdaptor ctxadaptor = null;
 
     /**
      * Creates the worker pool. Processing will not begin until {@link #start()} is called.
@@ -165,10 +173,18 @@ public class RequestQueue {
         }
 
         /**
+         * 实例化自动适配器
+         */
+        ctxadaptor = new ContextAdaptor();
+        ctxadaptor.initializeReceiver(ctx, mNetworkQueue);
+
+        /**
          * 实例化缓存队列
          */
-        mBufferDispatcher = new BufferDispatcher(mNetworkQueue, mBufferQueue);
+        mBufferDispatcher = new BufferDispatcher(mNetworkQueue, mBufferQueue, ctxadaptor);
         mBufferDispatcher.start();
+
+
     }
 
     /**
@@ -337,6 +353,12 @@ public class RequestQueue {
         }
     }
 
+    public void setContext(Context ctx) {
+        this.ctx = ctx;
+    }
+
+
+
     /**
      * Callback interface for completed requests.
      */
@@ -346,7 +368,6 @@ public class RequestQueue {
          */
         void onRequestFinished(Request<T> request);
     }
-
     /**
      * A simple predicate or filter interface for Requests, for use by
      * {@link RequestQueue#cancelAll(RequestFilter)}.

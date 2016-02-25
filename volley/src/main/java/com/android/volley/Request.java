@@ -24,8 +24,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 
-import com.android.volley.VolleyLog.MarkerLog;
 import com.android.volley.Response.ProgressListener;
+import com.android.volley.VolleyLog.MarkerLog;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -39,6 +39,12 @@ import java.util.Map;
  */
 public abstract class Request<T> implements Comparable<Request<T>> {
 
+    /**
+     * Request的三种属性
+     */
+    static public final int ACTIVE = 1;
+    static public final int DOZY = 2;
+    static public final int FROZEN = 3;
     /**
      * Default encoding for POST or PUT parameters. See {@link #getParamsEncoding()}.
      */
@@ -55,10 +61,6 @@ public abstract class Request<T> implements Comparable<Request<T>> {
      * Default tag for {@link TrafficStats}.
      */
     private final int mDefaultTrafficStatsTag;
-    /**
-     * Listener interface for errors.
-     */
-    private ProgressListener mProgressListener;
     /**
      * Listener interface for progress
      */
@@ -81,13 +83,30 @@ public abstract class Request<T> implements Comparable<Request<T>> {
      */
     public Map<String, String> extraHeader = null;
     /**
+     * Request的属性
+     */
+    public int property = 0;
+    /**
+     * 标示Request是来自哪一个App，这个最后会被用来判断程序的前后台状态。
+     */
+    public String AppInfo = null;
+    /**
      * The created time of this request
      */
     long arrTime = 0;
+
+
+    /**
+     * 2015-11-23 add
+     */
     /**
      * The deadline of this request
      */
     long endTime = 0;
+    /**
+     * Listener interface for errors.
+     */
+    private ProgressListener mProgressListener;
     /**
      * Sequence number of this request, used to enforce FIFO ordering.
      */
@@ -100,11 +119,6 @@ public abstract class Request<T> implements Comparable<Request<T>> {
      * Whether or not responses to this request should be cached.
      */
     private boolean mShouldCache = true;
-
-
-    /**
-     * 2015-11-23 add
-     */
     /**
      * Whether or not this request has been canceled.
      */
@@ -140,7 +154,6 @@ public abstract class Request<T> implements Comparable<Request<T>> {
     public Request(String url, Response.ErrorListener listener) {
         this(Method.DEPRECATED_GET_OR_POST, url, listener);
     }
-
 
     /**
      * Creates a new request with the given method (one of the values from {@link Method}),
@@ -636,6 +649,47 @@ public abstract class Request<T> implements Comparable<Request<T>> {
     }
 
     /**
+     *set OnProgressListener
+     */
+    public void setOnProgressListener(ProgressListener listener) {
+        mProgressListener = listener;
+    }
+
+    /**
+     * implements onProgress method
+     *
+     * @param transferredBytes
+     * @param totalSize
+     */
+    public void onProgress(long transferredBytes, long totalSize) {
+        if (null != mProgressListener) {
+            mProgressListener.onProgress(transferredBytes, totalSize);
+        }
+    }
+
+    /**
+     * 返回当前Request的属性，Active，Dozy，或者Frozen。
+     *
+     * @return
+     */
+    public int getProperty() {
+        return property;
+    }
+
+    public String getAppInfo() {
+        return AppInfo;
+    }
+
+    /**
+     * 设置和获取应用标识。
+     *
+     * @param s
+     */
+    public void setAppInfo(String s) {
+        AppInfo = s;
+    }
+
+    /**
      * Priority values.  Requests will be processed from higher priorities to
      * lower priorities, in FIFO order.
      */
@@ -645,7 +699,6 @@ public abstract class Request<T> implements Comparable<Request<T>> {
         HIGH,
         IMMEDIATE
     }
-
     /**
      * Supported request methods.
      */
@@ -659,22 +712,5 @@ public abstract class Request<T> implements Comparable<Request<T>> {
         int OPTIONS = 5;
         int TRACE = 6;
         int PATCH = 7;
-    }
-    /**
-     *set OnProgressListener
-     */
-    public void setOnProgressListener(ProgressListener listener){
-        mProgressListener = listener;
-    }
-
-    /**
-     * implements onProgress method
-     * @param transferredBytes
-     * @param totalSize
-     */
-    public void onProgress(long transferredBytes, long totalSize) {
-        if(null != mProgressListener){
-            mProgressListener.onProgress(transferredBytes, totalSize);
-        }
     }
 }
