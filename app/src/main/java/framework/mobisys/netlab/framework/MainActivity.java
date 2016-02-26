@@ -12,11 +12,12 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.volley.ERequest;
-import com.android.volley.Response;
 
 import framework.mobisys.netlab.transframeworkandroid.R;
 
@@ -24,6 +25,8 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     final String TAG = "MainActivity";
+
+    private WebView webView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +79,19 @@ public class MainActivity extends AppCompatActivity
          */
 
 
+        webView = (WebView) findViewById(R.id.MainWebView);
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.getSettings().setBuiltInZoomControls(true);
+        webView.loadUrl("http://52.88.216.252/boat.jpg");
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                view.loadUrl(url);
+                return true;
+            }
+        });
+
+
         E3Framework e3 = E3Framework.getInstance(this);
 
 //        /**
@@ -92,25 +108,24 @@ public class MainActivity extends AppCompatActivity
         ERequest text_er = e3.createRequest(url, ERequest.ACTIVE, "New Text Request");
         text_er.setShouldCache(false);
         text_er.setEndTime(text_er.getEndTime() + 1000);
-        e3.putERequest(text_er, new Response.Listener<byte[]>() {
-            @Override
-            public void onResponse(byte[] response) {
-                //System.out.println("Response Length:"+response.length);
-                textView.setText(new String(response));
-            }
-        });
+//        e3.putERequest(text_er, new Response.Listener<byte[]>() {
+//            @Override
+//            public void onResponse(byte[] response) {
+//                //System.out.println("Response Length:"+response.length);
+//                textView.setText(new String(response));
+//            }
+//        });
         final ImageView imageView = (ImageView) findViewById(R.id.MainImageView);
         url = "http://52.88.216.252/boat.jpg";
         ERequest er = e3.createRequest(url, ERequest.DOZY, "New Image Request");
         er.setShouldCache(false);
         er.setEndTime(er.getEndTime() + 3000);
-        e3.putERequest(er, new Response.Listener<byte[]>() {
-            @Override
-            public void onResponse(byte[] response) {
-                imageView.setImageBitmap(Tools.getBitmap(response));
-            }
-        });
-
+//        e3.putERequest(er, new Response.Listener<byte[]>() {
+//            @Override
+//            public void onResponse(byte[] response) {
+//                imageView.setImageBitmap(Tools.getBitmap(response));
+//            }
+//        });
 
 
 //        JsonObjectRequest jsObjRequest = new JsonObjectRequest
@@ -180,9 +195,6 @@ public class MainActivity extends AppCompatActivity
          */
 
 //        LObjectRequest lor = e3.createObjectRequest(url, 0, "ObjectTest");
-
-
-
 
 
     }

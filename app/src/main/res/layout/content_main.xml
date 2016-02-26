@@ -15,11 +15,22 @@
     <TextView
         android:id="@+id/MainTextView"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="100dp"
         android:text="Hello World!" />
 
     <ImageView
         android:id="@+id/MainImageView"
         android:layout_width="320dp"
-        android:layout_height="180dp" />
+        android:layout_height="180dp"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/MainTextView" />
+
+    <WebView
+        android:id="@+id/MainWebView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/MainImageView" />
 </RelativeLayout>
