@@ -17,4 +17,6 @@ interface ICallback {
                         void CallbackString(String s);
 
                         void CallbackObject(out IByteArray result);
+
+                        void CallbackByte(in byte[] result);
 }

@@ -18,6 +18,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.volley.ERequest;
+import com.android.volley.Response;
 
 import framework.mobisys.netlab.transframeworkandroid.R;
 
@@ -108,93 +109,27 @@ public class MainActivity extends AppCompatActivity
         ERequest text_er = e3.createRequest(url, ERequest.ACTIVE, "New Text Request");
         text_er.setShouldCache(false);
         text_er.setEndTime(text_er.getEndTime() + 1000);
-//        e3.putERequest(text_er, new Response.Listener<byte[]>() {
-//            @Override
-//            public void onResponse(byte[] response) {
-//                //System.out.println("Response Length:"+response.length);
-//                textView.setText(new String(response));
-//            }
-//        });
+
+        e3.putERequest(text_er, new Response.Listener<byte[]>() {
+            @Override
+            public void onResponse(byte[] response) {
+                //System.out.println("Response Length:"+response.length);
+                textView.setText(new String(response));
+            }
+        });
+
         final ImageView imageView = (ImageView) findViewById(R.id.MainImageView);
         url = "http://52.88.216.252/boat.jpg";
         ERequest er = e3.createRequest(url, ERequest.DOZY, "New Image Request");
         er.setShouldCache(false);
         er.setEndTime(er.getEndTime() + 3000);
+//
 //        e3.putERequest(er, new Response.Listener<byte[]>() {
 //            @Override
 //            public void onResponse(byte[] response) {
 //                imageView.setImageBitmap(Tools.getBitmap(response));
 //            }
 //        });
-
-
-//        JsonObjectRequest jsObjRequest = new JsonObjectRequest
-//                (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
-//                    @Override
-//                    public void onResponse(JSONObject response) {
-//                        textView.setText("Response: " + response.toString());
-//                        System.out.println("Load successfully!");
-//                    }
-//                }, new Response.ErrorListener() {
-//                    @Override
-//                    public void onErrorResponse(VolleyError error) {
-//                        // TODO Auto-generated method stub
-//                        System.out.println(error.getLocalizedMessage());
-//                    }
-//                });
-//        // Access the RequestQueue through your singleton class.
-//        RequestQueue queue = Volley.newRequestQueue(this);
-//        System.out.println("Add request to queue");
-//        queue.add(jsObjRequest);
-
-
-        /**
-         * 2015-11-23-测试更新之后的同步/异步API
-         */
-//        E3Framework e3 = E3Framework.getInstance(this);
-
-        /**
-         * 测试看能不能下载内容
-         */
-//        LStringRequest lsr = e3.createStringRequest(url, 0, "StringTest");
-//        e3.putStringRequest(lsr, new Response.Listener() {
-//            @Override
-//            public void onResponse(Object response) {
-//                textView.setText("Response: " + response.toString());
-//                //System.out.println("Load successfully!"+response.toString());
-//            }
-//        });
-
-
-        /**
-         * 使用ImageRequest获取数据并显示
-         */
-
-//        try {
-//            HttpURLConnection conn=(HttpURLConnection)(new URL(url).openConnection());
-//            conn.getInputStream();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
-//        ImageRequest imgrequest = new ImageRequest(url,
-//                new Response.Listener<Bitmap>() {
-//                    @Override
-//                    public void onResponse(Bitmap bitmap) {
-//                        imageView.setImageBitmap(bitmap);
-//                    }
-//                }, 0, 0, null,
-//                new Response.ErrorListener() {
-//                    public void onErrorResponse(VolleyError error) {
-//                        System.out.println(error.getLocalizedMessage());
-//                    }
-//                });
-
-        /**
-         * 测试我们自己写的ObjectRequest
-         */
-
-//        LObjectRequest lor = e3.createObjectRequest(url, 0, "ObjectTest");
 
 
     }

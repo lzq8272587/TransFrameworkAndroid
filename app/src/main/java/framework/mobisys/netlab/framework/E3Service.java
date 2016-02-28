@@ -7,6 +7,7 @@ import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.util.Log;
 
+import com.android.volley.ERequest;
 import com.android.volley.Response;
 
 
@@ -14,7 +15,7 @@ public class E3Service extends Service {
 
     private RemoteCallbackList<ICallback> mCallbacks = new RemoteCallbackList<ICallback>();
     private String TAG = "E3Service";
-
+    private int BUFFER_SIZE = 1024;
     // private IService.Stub
     private E3Framework e3Framework = null;
     private final E3RemoteService.Stub e3Binder = new E3RemoteService.Stub() {
@@ -44,20 +45,54 @@ public class E3Service extends Service {
         }
 
         @Override
-        public void putStringRequest(String url, int delay, String tag, final ICallback callback) throws RemoteException {
+        public void putERequest(String url, int delay, String tag,  final ICallback callback) throws RemoteException {
             Log.d(TAG, url + delay + tag);
             LStringRequest sr = e3Framework.createStringRequest(url, delay, tag);
-            e3Framework.putStringRequest(sr, new Response.Listener<String>() {
+            ERequest text_er = e3Framework.createRequest(url, ERequest.ACTIVE, "New Text Request");
+            text_er.setShouldCache(false);
+            text_er.setEndTime(text_er.getEndTime() + 1000);
+
+            e3Framework.putERequest(text_er, new Response.Listener<byte[]>() {
                 @Override
-                public void onResponse(String response) {
+                public void onResponse(byte[] response) {
                     try {
-                        Log.d(TAG, "onResponse, get the result for request.");
-                        callback.CallbackString(response);
-                    } catch (RemoteException e) {
+                        callback.CallbackByte(response);
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
             });
+        }
+
+        @Override
+        public void putStringRequest(String url, int delay, String tag, final ICallback callback) throws RemoteException {
+            Log.d(TAG, url + delay + tag);
+            LStringRequest sr = e3Framework.createStringRequest(url, delay, tag);
+            ERequest text_er = e3Framework.createRequest(url, ERequest.ACTIVE, "New Text Request");
+            text_er.setShouldCache(false);
+            text_er.setEndTime(text_er.getEndTime() + 1000);
+
+            e3Framework.putERequest(text_er, new Response.Listener<byte[]>() {
+                @Override
+                public void onResponse(byte[] response) {
+                    try {
+                        callback.CallbackByte(response);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+//            e3Framework.putStringRequest(sr, new Response.Listener<String>() {
+//                @Override
+//                public void onResponse(String response) {
+//                    try {
+//                        Log.d(TAG, "onResponse, get the result for request.");
+//                        callback.CallbackString(response);
+//                    } catch (RemoteException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            });
 
         }
 
@@ -70,11 +105,9 @@ public class E3Service extends Service {
                 public void onResponse(byte[] response) {
                     try {
                         Log.d(TAG, "onResponse, get the result for Object request. length=" + response.length);
-                        IByteArray b = new IByteArray();
-                        b.setByte(response);
-                        //b.setByte(response);
+                        byte[] b = new byte[BUFFER_SIZE];
                         Log.d(TAG, "before callbackobject.");
-                        callback.CallbackObject(b);
+                        callback.CallbackByte(b);
                         Log.d(TAG, "after callbackobject.");
                     } catch (RemoteException e) {
                         e.printStackTrace();
