@@ -18,5 +18,5 @@ interface ICallback {
 
                         void CallbackObject(out IByteArray result);
 
-                        void CallbackByte(in byte[] result);
+                        void CallbackByte(in byte[] result, in String url);
 }

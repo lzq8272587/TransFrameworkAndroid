@@ -48,7 +48,7 @@ public class E3Service extends Service {
         public void putERequest(String url, int delay, String tag,  final ICallback callback) throws RemoteException {
             Log.d(TAG, url + delay + tag);
             LStringRequest sr = e3Framework.createStringRequest(url, delay, tag);
-            ERequest text_er = e3Framework.createRequest(url, ERequest.ACTIVE, "New Text Request");
+            final ERequest text_er = e3Framework.createRequest(url, ERequest.ACTIVE, "New Text Request");
             text_er.setShouldCache(false);
             text_er.setEndTime(text_er.getEndTime() + 1000);
 
@@ -56,7 +56,7 @@ public class E3Service extends Service {
                 @Override
                 public void onResponse(byte[] response) {
                     try {
-                        callback.CallbackByte(response);
+                        callback.CallbackByte(response, text_er.url);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -68,7 +68,7 @@ public class E3Service extends Service {
         public void putStringRequest(String url, int delay, String tag, final ICallback callback) throws RemoteException {
             Log.d(TAG, url + delay + tag);
             LStringRequest sr = e3Framework.createStringRequest(url, delay, tag);
-            ERequest text_er = e3Framework.createRequest(url, ERequest.ACTIVE, "New Text Request");
+            final ERequest text_er = e3Framework.createRequest(url, ERequest.ACTIVE, "New Text Request");
             text_er.setShouldCache(false);
             text_er.setEndTime(text_er.getEndTime() + 1000);
 
@@ -76,7 +76,7 @@ public class E3Service extends Service {
                 @Override
                 public void onResponse(byte[] response) {
                     try {
-                        callback.CallbackByte(response);
+                        callback.CallbackByte(response,text_er.url);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -97,7 +97,7 @@ public class E3Service extends Service {
         }
 
         @Override
-        public void putObjectRequest(String url, int delay, String tag, final ICallback callback) throws RemoteException {
+        public void putObjectRequest(final String url, int delay, String tag, final ICallback callback) throws RemoteException {
             Log.d(TAG, url + delay + tag);
             LObjectRequest or = e3Framework.createObjectRequest(url, delay, tag);
             e3Framework.putObjectRequest(or, new Response.Listener<byte[]>() {
@@ -107,7 +107,7 @@ public class E3Service extends Service {
                         Log.d(TAG, "onResponse, get the result for Object request. length=" + response.length);
                         byte[] b = new byte[BUFFER_SIZE];
                         Log.d(TAG, "before callbackobject.");
-                        callback.CallbackByte(b);
+                        callback.CallbackByte(b,url);
                         Log.d(TAG, "after callbackobject.");
                     } catch (RemoteException e) {
                         e.printStackTrace();
