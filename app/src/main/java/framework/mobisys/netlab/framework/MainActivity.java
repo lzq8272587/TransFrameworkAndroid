@@ -1,6 +1,8 @@
 package framework.mobisys.netlab.framework;
 
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -9,6 +11,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,6 +31,7 @@ public class MainActivity extends AppCompatActivity
     final String TAG = "MainActivity";
 
     private WebView webView;
+    long t1,t2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,17 +99,18 @@ public class MainActivity extends AppCompatActivity
 
         E3Framework e3 = E3Framework.getInstance(this);
 
-//        /**
-//         * 2016-02-24-更新：统一使用ERequest
-//         * 加载图片内容
-//         */
+        /**
+         * 2016-02-24-更新：统一使用ERequest
+         * 加载图片内容
+         */
 
 
+        String url;
         /**
          * 加载文本内容
          */
         final TextView textView = (TextView) findViewById(R.id.MainTextView);
-        String url = "http://52.88.216.252/json_test.txt";
+        url = "http://121.42.158.232/json_test.txt";
         ERequest text_er = e3.createRequest(url, ERequest.ACTIVE, "New Text Request");
         text_er.setShouldCache(false);
         text_er.setEndTime(text_er.getEndTime() + 1000);
@@ -119,17 +124,17 @@ public class MainActivity extends AppCompatActivity
         });
 
         final ImageView imageView = (ImageView) findViewById(R.id.MainImageView);
-        url = "http://52.88.216.252/boat.jpg";
-        ERequest er = e3.createRequest(url, ERequest.DOZY, "New Image Request");
+        url = "http://121.42.158.232/mountain.jpg";
+        ERequest er = e3.createRequest(url, ERequest.ACTIVE, "New Image Request");
         er.setShouldCache(false);
         er.setEndTime(er.getEndTime() + 3000);
-//
-//        e3.putERequest(er, new Response.Listener<byte[]>() {
-//            @Override
-//            public void onResponse(byte[] response) {
-//                imageView.setImageBitmap(Tools.getBitmap(response));
-//            }
-//        });
+
+        e3.putERequest(er, new Response.Listener<byte[]>() {
+            @Override
+            public void onResponse(byte[] response) {
+                imageView.setImageBitmap(BitmapFactory.decodeByteArray(response, 0 , response.length));
+            }
+        });
 
 
     }
