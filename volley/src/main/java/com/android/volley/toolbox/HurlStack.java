@@ -17,6 +17,10 @@
 package com.android.volley.toolbox;
 
 
+import android.net.TrafficStats;
+import android.net.wifi.WifiManager;
+import android.util.Log;
+
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Request.Method;
@@ -236,7 +240,7 @@ public class HurlStack implements HttpStack {
         String sPath = "/data/data/framework.mobisys.netlab.transframeworkandroid/download";
         FileOutputStream f = new FileOutputStream(new File(sPath));
         int nStartPos = 0;
-        int blockSize = 512;
+        int blockSize = 2048;
         int timeout = 1500000;
         int NUMLIMIT_FAIL = 3;
         int nRead, failedCnt;
