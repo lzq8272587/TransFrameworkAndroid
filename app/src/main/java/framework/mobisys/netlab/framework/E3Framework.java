@@ -272,6 +272,7 @@ public class E3Framework implements Parcelable {
         er.setListener(rl);
         er.setProgressListener(pl);
         er.setTimeoutListener(tl);
+
         queue.add(er);
     }
 

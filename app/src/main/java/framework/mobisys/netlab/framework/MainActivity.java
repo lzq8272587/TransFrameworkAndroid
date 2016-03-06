@@ -49,20 +49,6 @@ public class MainActivity extends AppCompatActivity
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
 
-//                E3Framework e3 = E3Framework.getInstance(MainActivity.this);
-//                String url = "http://52.88.216.252/system.png";
-//                LObjectRequest lor = e3.createObjectRequest(url, 5, "ObjectTest");
-//                lor.setShouldCache(false);
-//                e3.putObjectRequest(lor, new Response.Listener<byte[]>() {
-//                    @Override
-//                    public void onResponse(byte[] response) {
-//                        //imageView.setImageBitmap(Tools.getBitmap(response));
-//                    }
-//                }, new Response.ProgressListener() {
-//                    @Override
-//                    public void onProgress(long transferredBytes, long totalSize) {
-//                    }
-//                });
             }
         });
 
@@ -123,18 +109,18 @@ public class MainActivity extends AppCompatActivity
 //            }
 //        });
 
-        final ImageView imageView = (ImageView) findViewById(R.id.MainImageView);
-        url = "http://121.42.158.232/mountain.jpg";
-        ERequest er = e3.createRequest(url, ERequest.ACTIVE, "New Image Request");
-        er.setShouldCache(false);
-        er.setEndTime(er.getEndTime() + 3000);
-
-        e3.putERequest(er, new Response.Listener<byte[]>() {
-            @Override
-            public void onResponse(byte[] response) {
-                imageView.setImageBitmap(BitmapFactory.decodeByteArray(response, 0, response.length));
-            }
-        });
+//        final ImageView imageView = (ImageView) findViewById(R.id.MainImageView);
+//        url = "http://121.42.158.232/mountain.jpg";
+//        ERequest er = e3.createRequest(url, ERequest.ACTIVE, "New Image Request");
+//        er.setShouldCache(false);
+//        er.setEndTime(er.getEndTime() + 3000);
+//
+//        e3.putERequest(er, new Response.Listener<byte[]>() {
+//            @Override
+//            public void onResponse(byte[] response) {
+//                imageView.setImageBitmap(BitmapFactory.decodeByteArray(response, 0, response.length));
+//            }
+//        });
 
 
     }

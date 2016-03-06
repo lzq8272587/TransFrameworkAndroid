@@ -14,7 +14,7 @@ interface E3RemoteService {
     void basicTypes(int anInt, long aLong, boolean aBoolean, float aFloat,
             double aDouble, String aString);
 
-                        void putERequest(String url, int delay, String tag, ICallback callback);
+                        void putERequest(String url, int delay, String tag, String sProperty, ICallback callback);
 
                         void putStringRequest(String url, int delay, String tag, ICallback callback);
 
