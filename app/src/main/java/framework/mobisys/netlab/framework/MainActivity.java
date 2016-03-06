@@ -1,6 +1,9 @@
 package framework.mobisys.netlab.framework;
 
+import android.content.Context;
 import android.graphics.BitmapFactory;
+import android.net.TrafficStats;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.design.widget.FloatingActionButton;
@@ -29,10 +32,6 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     final String TAG = "MainActivity";
-
-    private WebView webView;
-    long t1,t2;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,20 +49,6 @@ public class MainActivity extends AppCompatActivity
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
 
-//                E3Framework e3 = E3Framework.getInstance(MainActivity.this);
-//                String url = "http://52.88.216.252/system.png";
-//                LObjectRequest lor = e3.createObjectRequest(url, 5, "ObjectTest");
-//                lor.setShouldCache(false);
-//                e3.putObjectRequest(lor, new Response.Listener<byte[]>() {
-//                    @Override
-//                    public void onResponse(byte[] response) {
-//                        //imageView.setImageBitmap(Tools.getBitmap(response));
-//                    }
-//                }, new Response.ProgressListener() {
-//                    @Override
-//                    public void onProgress(long transferredBytes, long totalSize) {
-//                    }
-//                });
             }
         });
 
@@ -84,17 +69,18 @@ public class MainActivity extends AppCompatActivity
          */
 
 
-        webView = (WebView) findViewById(R.id.MainWebView);
-        webView.getSettings().setJavaScriptEnabled(true);
-        webView.getSettings().setBuiltInZoomControls(true);
-        webView.loadUrl("http://52.88.216.252/boat.jpg");
-        webView.setWebViewClient(new WebViewClient() {
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                view.loadUrl(url);
-                return true;
-            }
-        });
+//        webView = (WebView) findViewById(R.id.MainWebView);
+//        webView.getSettings().setJavaScriptEnabled(true);
+//        webView.getSettings().setBuiltInZoomControls(true);
+//        webView.clearCache(true);
+//        webView.loadUrl("http://52.88.216.252/boat.jpg");
+//        webView.setWebViewClient(new WebViewClient() {
+//            @Override
+//            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+//                view.loadUrl(url);
+//                return true;
+//            }
+//        });
 
 
         E3Framework e3 = E3Framework.getInstance(this);
@@ -109,32 +95,32 @@ public class MainActivity extends AppCompatActivity
         /**
          * 加载文本内容
          */
-        final TextView textView = (TextView) findViewById(R.id.MainTextView);
-        url = "http://121.42.158.232/json_test.txt";
-        ERequest text_er = e3.createRequest(url, ERequest.ACTIVE, "New Text Request");
-        text_er.setShouldCache(false);
-        text_er.setEndTime(text_er.getEndTime() + 1000);
+//        final TextView textView = (TextView) findViewById(R.id.MainTextView);
+//        url = "http://121.42.158.232/json_test.txt";
+//        ERequest text_er = e3.createRequest(url, ERequest.ACTIVE, "New Text Request");
+//        text_er.setShouldCache(false);
+//        text_er.setEndTime(text_er.getEndTime() + 1000);
+//
+//        e3.putERequest(text_er, new Response.Listener<byte[]>() {
+//            @Override
+//            public void onResponse(byte[] response) {
+//                //System.out.println("Response Length:"+response.length);
+//                textView.setText(new String(response));
+//            }
+//        });
 
-        e3.putERequest(text_er, new Response.Listener<byte[]>() {
-            @Override
-            public void onResponse(byte[] response) {
-                //System.out.println("Response Length:"+response.length);
-                textView.setText(new String(response));
-            }
-        });
-
-        final ImageView imageView = (ImageView) findViewById(R.id.MainImageView);
-        url = "http://121.42.158.232/mountain.jpg";
-        ERequest er = e3.createRequest(url, ERequest.ACTIVE, "New Image Request");
-        er.setShouldCache(false);
-        er.setEndTime(er.getEndTime() + 3000);
-
-        e3.putERequest(er, new Response.Listener<byte[]>() {
-            @Override
-            public void onResponse(byte[] response) {
-                imageView.setImageBitmap(BitmapFactory.decodeByteArray(response, 0 , response.length));
-            }
-        });
+//        final ImageView imageView = (ImageView) findViewById(R.id.MainImageView);
+//        url = "http://121.42.158.232/mountain.jpg";
+//        ERequest er = e3.createRequest(url, ERequest.ACTIVE, "New Image Request");
+//        er.setShouldCache(false);
+//        er.setEndTime(er.getEndTime() + 3000);
+//
+//        e3.putERequest(er, new Response.Listener<byte[]>() {
+//            @Override
+//            public void onResponse(byte[] response) {
+//                imageView.setImageBitmap(BitmapFactory.decodeByteArray(response, 0, response.length));
+//            }
+//        });
 
 
     }

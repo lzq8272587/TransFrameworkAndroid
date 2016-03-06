@@ -46,6 +46,10 @@ public abstract class Request<T> implements Comparable<Request<T>> {
     static public final int DOZY = 2;
     static public final int FROZEN = 3;
     /**
+     * sProperty stands for the separate transmission range.
+     */
+    public String sProperty;
+    /**
      * Default encoding for POST or PUT parameters. See {@link #getParamsEncoding()}.
      */
     private static final String DEFAULT_PARAMS_ENCODING = "UTF-8";
@@ -317,6 +321,13 @@ public abstract class Request<T> implements Comparable<Request<T>> {
         return mUrl;
     }
 
+    /**
+     * Returns the sProperty of this request.
+     */
+
+    public String getsProperty(){
+        return sProperty;
+    }
     /**
      * Returns the cache key for this request.  By default, this is the URL.
      */

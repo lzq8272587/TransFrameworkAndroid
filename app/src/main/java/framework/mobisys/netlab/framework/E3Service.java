@@ -8,6 +8,7 @@ import android.os.RemoteException;
 import android.util.Log;
 
 import com.android.volley.ERequest;
+import com.android.volley.Request;
 import com.android.volley.Response;
 
 
@@ -45,18 +46,15 @@ public class E3Service extends Service {
         }
 
         @Override
-        public void putERequest(String url, int delay, String tag,  final ICallback callback) throws RemoteException {
-            Log.d(TAG, url + delay + tag);
-            LStringRequest sr = e3Framework.createStringRequest(url, delay, tag);
-            final ERequest text_er = e3Framework.createRequest(url, ERequest.ACTIVE, "New Text Request");
-            text_er.setShouldCache(false);
-            text_er.setEndTime(text_er.getEndTime() + 1000);
-
-            e3Framework.putERequest(text_er, new Response.Listener<byte[]>() {
+        public void putERequest(String url, int delay, String tag, String sProperty, final ICallback callback) throws RemoteException {
+            final ERequest er = e3Framework.createRequest(url, ERequest.ACTIVE, "NewByteRequest");
+            er.setShouldCache(false);
+            er.sProperty = sProperty;
+            e3Framework.putERequest(er, new Response.Listener<byte[]>() {
                 @Override
                 public void onResponse(byte[] response) {
                     try {
-                        callback.CallbackByte(response, text_er.url);
+                        callback.CallbackByte(response, er.url);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

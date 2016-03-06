@@ -17,6 +17,10 @@
 package com.android.volley.toolbox;
 
 
+import android.net.TrafficStats;
+import android.net.wifi.WifiManager;
+import android.util.Log;
+
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Request.Method;
@@ -212,11 +216,9 @@ public class HurlStack implements HttpStack {
         }
         URL parsedUrl = new URL(url);
         HttpURLConnection connection = openConnection(parsedUrl, request);
+        connection.setRequestProperty("RANGE", request.sProperty);
 
         connection.setUseCaches(false);
-        for (String headerName : map.keySet()) {
-            connection.addRequestProperty(headerName, map.get(headerName));
-        }
         setConnectionParametersForRequest(connection, request);
         InputStream inputStream ;
         ProgressListener progressListener = null;
@@ -227,6 +229,7 @@ public class HurlStack implements HttpStack {
             try {
                 connection.disconnect();
                 connection = openConnection(parsedUrl, request);
+                connection.setRequestProperty("RANGE", request.sProperty);
                 inputStream = connection.getInputStream();
                 break;
             } catch (Exception e) {
@@ -236,11 +239,24 @@ public class HurlStack implements HttpStack {
         String sPath = "/data/data/framework.mobisys.netlab.transframeworkandroid/download";
         FileOutputStream f = new FileOutputStream(new File(sPath));
         int nStartPos = 0;
-        int blockSize = 512;
+        int blockSize = 2048;
         int timeout = 1500000;
         int NUMLIMIT_FAIL = 3;
         int nRead, failedCnt;
-        long nEndPos = connection.getContentLength();
+        long nEndPos;
+        /**
+         * split() is used here to get End Position from sProperty.
+         * e.g.
+         *      sProperty = "bytes=0-1024"
+         *      then nEndPos = 1024
+         */
+        if(request.sProperty == null) {
+            nEndPos = connection.getContentLength();
+        }
+        else {
+            nEndPos = Long.parseLong(request.sProperty.split("-")[1]);
+        }
+
         byte[] b = new byte[blockSize];
         String sProperty ;   //sProperty设置的是开始下载的位置，即断点。若nStartPos为0则完整下载整个文件
         while (true) {
@@ -265,6 +281,7 @@ public class HurlStack implements HttpStack {
                             try {
                                 connection.disconnect();
                                 connection = openConnection(parsedUrl, request);
+                                connection.setRequestProperty("RANGE", request.sProperty);
                                 connection.setConnectTimeout(timeout);
                                 connection.setReadTimeout(timeout);
                                 sProperty = "bytes="  + nStartPos +  "-" +nEndPos;   //sProperty设置的是开始下载的位置，即断点。若nStartPos为0则完整下载整个文件
@@ -358,6 +375,7 @@ public class HurlStack implements HttpStack {
      */
     private HttpURLConnection openConnection(URL url, Request<?> request) throws IOException {
         HttpURLConnection connection = createConnection(url);
+        connection.setRequestProperty("RANGE", request.sProperty);
 
         int timeoutMs = request.getTimeoutMs();
         connection.setConnectTimeout(timeoutMs);

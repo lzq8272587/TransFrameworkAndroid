@@ -25,7 +25,6 @@ public class ERequest extends Request<byte[]> {
      * 每一个Request会对应一个URL。
      */
     public String url = null;
-
     /**
      * 监听Response的Listener。
      */
