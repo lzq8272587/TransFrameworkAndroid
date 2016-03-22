@@ -160,7 +160,7 @@ public class ContextAdaptor extends BroadcastReceiver {
         int mNetWorkType = 0;
         if (networkInfo != null && networkInfo.isConnected()) {
             String type = networkInfo.getTypeName();
-            Log.e(TAG, type);
+            Log.d(TAG, type);
             if (type.equalsIgnoreCase("WIFI")) {
                 mNetWorkType = NETWORK_TYPE_WIFI;
             } else if (type.equalsIgnoreCase("MOBILE")) {
@@ -222,7 +222,6 @@ public class ContextAdaptor extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         // TODO: This method is called when the BroadcastReceiver is receiving
         // an Intent broadcast.
-        Log.e(TAG, intent.getAction());
         if (intent.getAction().equals("android.net.conn.CONNECTIVITY_CHANGE")) {
             /**
              * 监听到网络连接发生变化
@@ -248,7 +247,7 @@ public class ContextAdaptor extends BroadcastReceiver {
             synchronized (PendingRequest) {
                 for (Iterator<Request> iterator = PendingRequest.iterator(); iterator.hasNext(); ) {
                     try {
-                        Log.e(TAG, "Put a Pending Request to NetworkQueue.");
+                        Log.i(TAG, "Put a Pending Request to NetworkQueue.");
                         Request r = iterator.next();
                         mNetworkQueue.put(r);
                         iterator.remove();
@@ -275,7 +274,7 @@ public class ContextAdaptor extends BroadcastReceiver {
          * 如果take得到一个Active的Request，那么直接丢到NetworkQueue里面去处理。
          */
         if (eRequest.getProperty() == Request.ACTIVE) {
-            Log.e(TAG, "Take a Active Request.");
+            Log.d(TAG, "Take a Active Request.");
             try {
                 mNetworkQueue.put(eRequest);
                 lastSend = SystemClock.elapsedRealtime();
@@ -289,7 +288,7 @@ public class ContextAdaptor extends BroadcastReceiver {
          * 处理Dozy类型的Request，只有在某些特定环境下才会延迟处理。
          */
         if (eRequest.getProperty() == ERequest.DOZY) {
-            Log.e(TAG, "Take a Dozy Request.");
+            Log.d(TAG, "Take a Dozy Request.");
             if (getBatteryCapacity() < BATTERY_THRESH) {
                 /**
                  * Case 1: 如果剩余电量小于可用阈值，那么一定延迟处理。
@@ -342,13 +341,11 @@ public class ContextAdaptor extends BroadcastReceiver {
              * 设置定时任务，到时候再触发。
              */
             if (PendingRequest.size() == 0) {
-                //Log.d(TAG, "mCurrentRunnable is empty, set nextTime to the endTime of this new request.");
                 nextTime = eRequest.getEndTime();
                 /**
                  * 把当前Request存放到挂起队列中
                  */
                 PendingRequest.add(eRequest);
-//                Log.e(TAG,"put in set "+PendingRequest.add(eRequest));
                 /**
                  * 设置定时任务，延迟到快要Timeout的时候再执行发送任务
                  */
