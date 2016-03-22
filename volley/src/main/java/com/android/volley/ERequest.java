@@ -5,9 +5,6 @@ import android.util.Log;
 
 import com.android.volley.toolbox.HttpHeaderParser;
 
-/**
- * Created by LZQ on 2/23/2016.
- */
 public class ERequest extends Request<byte[]> {
 
     /**

@@ -8,9 +8,6 @@ import android.util.Log;
 import java.util.HashSet;
 import java.util.concurrent.BlockingQueue;
 
-/**
- * Created by LZQ on 11/24/2015.
- */
 public class BufferDispatcher extends Thread {
 
     /**
