@@ -1,11 +1,7 @@
 package framework.mobisys.netlab.framework;
 
-import android.content.Context;
 import android.graphics.BitmapFactory;
-import android.net.TrafficStats;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -14,12 +10,9 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -38,10 +31,6 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        /**
-         * 下面的这段代码是用来执行悬浮的mail按钮被按下的时候进行的操作，其实就是下面有一个Snackbar，这个bar会弹出然后显示一行字。
-         */
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -57,70 +46,38 @@ public class MainActivity extends AppCompatActivity
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
-
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        /**
-         * 在主界面的TextView上显示下载到的内容
-         */
-        /**
-         * Test: 利用Volley读取数据，然后显示在主界面的TextView上
-         */
-
-
-//        webView = (WebView) findViewById(R.id.MainWebView);
-//        webView.getSettings().setJavaScriptEnabled(true);
-//        webView.getSettings().setBuiltInZoomControls(true);
-//        webView.clearCache(true);
-//        webView.loadUrl("http://52.88.216.252/boat.jpg");
-//        webView.setWebViewClient(new WebViewClient() {
-//            @Override
-//            public boolean shouldOverrideUrlLoading(WebView view, String url) {
-//                view.loadUrl(url);
-//                return true;
-//            }
-//        });
-
 
         E3Framework e3 = E3Framework.getInstance(this);
-
-        /**
-         * 2016-02-24-更新：统一使用ERequest
-         * 加载图片内容
-         */
-
-
         String url;
-        /**
-         * 加载文本内容
-         */
-//        final TextView textView = (TextView) findViewById(R.id.MainTextView);
-//        url = "http://121.42.158.232/json_test.txt";
-//        ERequest text_er = e3.createRequest(url, ERequest.ACTIVE, "New Text Request");
-//        text_er.setShouldCache(false);
-//        text_er.setEndTime(text_er.getEndTime() + 1000);
-//
-//        e3.putERequest(text_er, new Response.Listener<byte[]>() {
-//            @Override
-//            public void onResponse(byte[] response) {
-//                //System.out.println("Response Length:"+response.length);
-//                textView.setText(new String(response));
-//            }
-//        });
 
-//        final ImageView imageView = (ImageView) findViewById(R.id.MainImageView);
-//        url = "http://121.42.158.232/mountain.jpg";
-//        ERequest er = e3.createRequest(url, ERequest.ACTIVE, "New Image Request");
-//        er.setShouldCache(false);
-//        er.setEndTime(er.getEndTime() + 3000);
-//
-//        e3.putERequest(er, new Response.Listener<byte[]>() {
-//            @Override
-//            public void onResponse(byte[] response) {
-//                imageView.setImageBitmap(BitmapFactory.decodeByteArray(response, 0, response.length));
-//            }
-//        });
+        final TextView textView = (TextView) findViewById(R.id.MainTextView);
+        url = "http://52.88.216.252/json_test.txt";
+        ERequest text_er = e3.createRequest(url, ERequest.ACTIVE, "New Text Request");
+        text_er.setShouldCache(false);
+        text_er.setEndTime(text_er.getEndTime() + 1000);
+
+        e3.putERequest(text_er, new Response.Listener<byte[]>() {
+            @Override
+            public void onResponse(byte[] response) {
+                textView.setText(new String(response));
+            }
+        });
+
+        final ImageView imageView = (ImageView) findViewById(R.id.MainImageView);
+        url = "http://52.88.216.252/boat.jpg";
+        ERequest er = e3.createRequest(url, ERequest.ACTIVE, "New Image Request");
+        er.setShouldCache(false);
+        er.setEndTime(er.getEndTime() + 3000);
+
+        e3.putERequest(er, new Response.Listener<byte[]>() {
+            @Override
+            public void onResponse(byte[] response) {
+                imageView.setImageBitmap(BitmapFactory.decodeByteArray(response, 0, response.length));
+            }
+        });
 
 
     }
