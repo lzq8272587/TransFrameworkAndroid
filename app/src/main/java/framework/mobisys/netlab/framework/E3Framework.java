@@ -15,9 +15,6 @@ import com.android.volley.toolbox.Volley;
 
 import org.json.JSONObject;
 
-/**
- * Created by LZQ on 11/11/2015.
- */
 public class E3Framework implements Parcelable {
 
     private static E3Framework instance = null;
